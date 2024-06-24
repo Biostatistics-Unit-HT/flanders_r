@@ -6,6 +6,7 @@ image: rocker/tidyverse
 stages:
   - test
   - build
+  - check
 
 # define test job
 test-job:
@@ -22,4 +23,8 @@ build-job:
     # install
     - R -e "roxygen2::roxygenise()"
     - R CMD build ./
-    - R CMD check *.tar.gz --no-manual
+
+check-job:                                                                                                                                                                                                  
+  stage: check                                                                                                                                                                                              
+  script:                                                                                                                                                                                                   
+    - R CMD check *.tar.gz --no-manual 
