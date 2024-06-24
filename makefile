@@ -13,7 +13,7 @@ build:
 all: roxygen build check install clean
 
 check: $(PKG_NAME)_$(PKG_VERSION).tar.gz roxygen
-	R CMD check $(PKG_NAME)_$(PKG_VERSION).tar.gz
+	R CMD check $(PKG_NAME)_$(PKG_VERSION).tar.gz --no-manual
 
 install: $(PKG_NAME)_$(PKG_VERSION).tar.gz
 	R CMD INSTALL $(PKG_NAME)_$(PKG_VERSION).tar.gz
