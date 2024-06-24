@@ -15,9 +15,10 @@ test-job:
     - R CMD check ./ --no-manual
     # run the devtools test
     - R -e 'devtools::test()'
-    
+
 build-job:
   stage: build
   script:
     # install
+    - R -e "roxygen2::roxygenise()"
     - R -e 'devtools::install()'
