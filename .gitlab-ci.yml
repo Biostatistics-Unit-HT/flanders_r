@@ -21,4 +21,5 @@ build-job:
   script:
     # install
     - R -e "roxygen2::roxygenise()"
-    - R -e 'devtools::install()'
+    - R CMD build ./
+    - R CMD check *.tar.gz --no-manual
