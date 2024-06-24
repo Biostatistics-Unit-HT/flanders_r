@@ -23,8 +23,5 @@ build-job:
     # install
     - R -e "roxygen2::roxygenise()"
     - R CMD build ./
+    - PKG_VERSION=$(shell grep -i ^version DESCRIPTION | cut -d : -d \  -f 2)                                                                                                                                   - PKG_NAME=$(shell grep -i ^package DESCRIPTION | cut -d : -d \  -f 2)                                                                                                                                      - R CMD check $(PKG_NAME)_$(PKG_VERSION).tar.gz --no-manual
 
-check-job:                                                                                                                                                                                                  
-  stage: check                                                                                                                                                                                              
-  script:                                                                                                                                                                                                   
-    - R CMD check *.tar.gz --no-manual 
