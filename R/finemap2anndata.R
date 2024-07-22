@@ -12,6 +12,8 @@ library(Matrix)
 #' includes metadata about the start and end positions of each credible set.
 #'
 #' @param finemap_files A character vector of file paths to the finemap `.rds` files.
+#' @param study_id A character vector specifying the study_id for each of the finemap_files
+#' @param phenotype_id A character vector specifying the phenotype_id for each of the finemap_files
 #' @param output_file A character string specifying the path to save the resulting AnnData object as an `.h5ad` file.
 #' @param panel A character string specifying the SNP genotyping/imputation panel
 #'
@@ -32,6 +34,24 @@ library(Matrix)
 #' # List all files matching the pattern
 #' finemap_chr22_files <- list.files(finemap_folder, pattern = "chr22.*\\.rds", full.names = TRUE)
 #' finemap_chr22_files <- finemap_chr22_files[!grepl("GWAS", finemap_chr22_files)]
+#' # Function to extract study_id and phenotype_id from filename
+#' get_study_phenotype_id <- function(file_name) {
+#'   pattern <- "^(.*?chr[0-9XY]+)_(.*?)_chr[0-9XY]+:.*\\.rds$"
+#'   matches <- regmatches(file_name, regexec(pattern, file_name))
+#'   study_phenotype_id <- unlist(lapply(matches, function(x) x[2:3]))
+#'   return(study_phenotype_id)
+#' }
+#' 
+#' # Collect study_id and phenotype_id for each credible set
+#' study_phenotype_ids <- t(sapply(basename(finemap_chr22_files), get_study_phenotype_id))
+#' colnames(study_phenotype_ids) <- c("study_id", "phenotype_id")
+#' ad_chr_22 <- finemap2anndata(
+#'   finemap_files = finemap_chr22_files,
+#'   study_id = study_phenotype_ids$study_id,
+#'   phenotype_id = study_phenotype_ids$phenotype_id,
+#'   output_file = output_file_chr22,
+#'   panel = "HRC"
+#' )
 #'
 #' finemap_chr21_files <- list.files(finemap_folder, pattern = "chr21.*\\.rds", full.names = TRUE)
 #' finemap_chr21_files <- finemap_chr21_files[!grepl("GWAS", finemap_chr21_files)]
@@ -79,8 +99,10 @@ library(Matrix)
 #' }
 finemap2anndata <- function(
     finemap_files,
+    study_id = NULL,
+    phenotype_id = NULL,
     output_file,
-    panel
+    panel = NULL
 ){
   
   # Initialize a list to store the filtered data
@@ -89,10 +111,14 @@ finemap2anndata <- function(
   # Loop through each file and filter data
   print("Reading finemap files...")
   
+  min_res_labf <- c()
+  
   for (finemap_file in finemap_files) {
     
     # Read the .rds file
     finemap <- data.table(readRDS(finemap_file))
+    
+    min_res_labf <- c(min_res_labf,min(finemap$lABF))
     
     # Filter rows where is_cs is TRUE
     filtered_finemap <- finemap[is_cs == TRUE]
@@ -120,6 +146,8 @@ finemap2anndata <- function(
   
   print("Populating sparse matrix...")
   
+  top_pvalue <- c()
+  
   # Fill the sparse matrix with lABF values
   for (credible_set in credible_sets) {
     credible_data <- filtered_data_list[[credible_set]]
@@ -127,6 +155,7 @@ finemap2anndata <- function(
     col_indices <- element_indices[credible_data$snp]
     lABF_values <- credible_data$lABF
     lABF_matrix_sparse[row_index, col_indices] <- lABF_values
+    top_pvalue <- c(top_pvalue,min(credible_data$pC))
   }
   
   print("Creating AnnData object...")
@@ -150,9 +179,14 @@ finemap2anndata <- function(
   
   # Convert to a data frame and set row names
   obs_df <- as.data.frame(chr_start_end_positions, stringsAsFactors = FALSE)
+  obs_df$study_id <- study_id
+  obs_df$phenotype_id <- phenotype_id
   obs_df$start <- as.numeric(obs_df$start)
   obs_df$end <- as.numeric(obs_df$end)
+  obs_df$top_pvalue <- top_pvalue
+  obs_df$min_res_labf <- min_res_labf
   obs_df$panel <- panel
+  obs_df$cs_name <- credible_sets
   rownames(obs_df) <- credible_sets
   
   # Assign the data frame to ad$obs

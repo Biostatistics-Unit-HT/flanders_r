@@ -4,10 +4,20 @@
 \alias{finemap2anndata}
 \title{Convert finemap files to AnnData}
 \usage{
-finemap2anndata(finemap_files, output_file, panel)
+finemap2anndata(
+  finemap_files,
+  study_id = NULL,
+  phenotype_id = NULL,
+  output_file,
+  panel = NULL
+)
 }
 \arguments{
 \item{finemap_files}{A character vector of file paths to the finemap `.rds` files.}
+
+\item{study_id}{A character vector specifying the study_id for each of the finemap_files}
+
+\item{phenotype_id}{A character vector specifying the phenotype_id for each of the finemap_files}
 
 \item{output_file}{A character string specifying the path to save the resulting AnnData object as an `.h5ad` file.}
 
@@ -36,6 +46,24 @@ finemap_folder <- "/group/pirastu/prj_014_huvec_coloc/2024_04_huvec_hcoloc_analy
 # List all files matching the pattern
 finemap_chr22_files <- list.files(finemap_folder, pattern = "chr22.*\\\\.rds", full.names = TRUE)
 finemap_chr22_files <- finemap_chr22_files[!grepl("GWAS", finemap_chr22_files)]
+# Function to extract study_id and phenotype_id from filename
+get_study_phenotype_id <- function(file_name) {
+  pattern <- "^(.*?chr[0-9XY]+)_(.*?)_chr[0-9XY]+:.*\\\\.rds$"
+  matches <- regmatches(file_name, regexec(pattern, file_name))
+  study_phenotype_id <- unlist(lapply(matches, function(x) x[2:3]))
+  return(study_phenotype_id)
+}
+
+# Collect study_id and phenotype_id for each credible set
+study_phenotype_ids <- t(sapply(basename(finemap_chr22_files), get_study_phenotype_id))
+colnames(study_phenotype_ids) <- c("study_id", "phenotype_id")
+ad_chr_22 <- finemap2anndata(
+  finemap_files = finemap_chr22_files,
+  study_id = study_phenotype_ids$study_id,
+  phenotype_id = study_phenotype_ids$phenotype_id,
+  output_file = output_file_chr22,
+  panel = "HRC"
+)
 
 finemap_chr21_files <- list.files(finemap_folder, pattern = "chr21.*\\\\.rds", full.names = TRUE)
 finemap_chr21_files <- finemap_chr21_files[!grepl("GWAS", finemap_chr21_files)]
