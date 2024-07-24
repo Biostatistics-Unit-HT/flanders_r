@@ -1,9 +1,3 @@
-# Load necessary libraries
-library(anndata)
-library(data.table)
-library(dplyr)
-library(Matrix)
-
 #' Convert finemap files to AnnData
 #'
 #' This function reads finemap `.rds` files, filters rows where `is_cs` is `TRUE`,
@@ -41,7 +35,7 @@ library(Matrix)
 #'   study_phenotype_id <- unlist(lapply(matches, function(x) x[2:3]))
 #'   return(study_phenotype_id)
 #' }
-#' 
+#'
 #' # Collect study_id and phenotype_id for each credible set
 #' study_phenotype_ids <- t(sapply(basename(finemap_chr22_files), get_study_phenotype_id))
 #' colnames(study_phenotype_ids) <- c("study_id", "phenotype_id")
@@ -104,37 +98,42 @@ finemap2anndata <- function(
     output_file,
     panel = NULL
 ){
-  
+
+  library(anndata)
+  library(data.table)
+  library(dplyr)
+  library(Matrix)
+
   # Initialize a list to store the filtered data
   filtered_data_list <- list()
-  
+
   # Loop through each file and filter data
   print("Reading finemap files...")
-  
+
   min_res_labf <- c()
-  
+
   for (finemap_file in finemap_files) {
-    
+
     # Read the .rds file
-    finemap <- data.table(readRDS(finemap_file))
-    
+    finemap <- data.table::data.table(readRDS(finemap_file))
+
     min_res_labf <- c(min_res_labf,min(finemap$lABF))
-    
+
     # Filter rows where is_cs is TRUE
     filtered_finemap <- finemap[is_cs == TRUE]
-    
+
     # Append the filtered data to the list
     filtered_data_list[[basename(finemap_file)]] <- filtered_finemap
   }
-  
+
   # Collect all unique SNPs
   all_snps <- unique(unlist(lapply(filtered_data_list, function(x) x$snp)))
-  
-  element_indices <- setNames(seq_along(all_snps), all_snps)
-  
+
+  element_indices <- stats::setNames(seq_along(all_snps), all_snps)
+
   # Collect all credible set names
   credible_sets <- names(filtered_data_list)
-  
+
   # Create a sparse matrix to store lABF values
   lABF_matrix_sparse <- Matrix(
     0,
@@ -143,11 +142,11 @@ finemap2anndata <- function(
     sparse = TRUE,
     dimnames = list(credible_sets, all_snps)
   )
-  
+
   print("Populating sparse matrix...")
-  
+
   top_pvalue <- c()
-  
+
   # Fill the sparse matrix with lABF values
   for (credible_set in credible_sets) {
     credible_data <- filtered_data_list[[credible_set]]
@@ -157,14 +156,14 @@ finemap2anndata <- function(
     lABF_matrix_sparse[row_index, col_indices] <- lABF_values
     top_pvalue <- c(top_pvalue,min(credible_data$pC))
   }
-  
+
   print("Creating AnnData object...")
-  
+
   # Convert the sparse matrix to an AnnData object
   ad <- AnnData(X = lABF_matrix_sparse)
-  
+
   print("Creating obs meta data...")
-  
+
   # Extract start and end positions from the credible set names
   get_chr_start_end <- function(file_name) {
     pattern <- "locus_(chr[0-9XY]+)_([0-9]+)_([0-9]+)_finemap.rds"
@@ -172,11 +171,11 @@ finemap2anndata <- function(
     chr_start_end <- unlist(lapply(matches, function(x) x[2:4]))
     return(chr_start_end)
   }
-  
+
   # Collect chromosome, start, and end positions for each credible set
   chr_start_end_positions <- t(sapply(credible_sets, get_chr_start_end))
   colnames(chr_start_end_positions) <- c("chr", "start", "end")
-  
+
   # Convert to a data frame and set row names
   obs_df <- as.data.frame(chr_start_end_positions, stringsAsFactors = FALSE)
   obs_df$study_id <- study_id
@@ -188,16 +187,16 @@ finemap2anndata <- function(
   obs_df$panel <- panel
   obs_df$cs_name <- credible_sets
   rownames(obs_df) <- credible_sets
-  
+
   # Assign the data frame to ad$obs
   ad$obs <- obs_df
-  
+
   print("Writing AnnData to a disk...")
-  
+
   # Save the AnnData object to .h5ad file
   ad$write_h5ad(output_file)
-  
+
   print("Done...")
-  
+
   return(ad)
 }

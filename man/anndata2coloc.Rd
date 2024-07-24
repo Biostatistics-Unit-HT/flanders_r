@@ -13,8 +13,8 @@ anndata2coloc(ad)
 A list of colocalization results for each pair of traits.
 }
 \description{
-This function performs colocalization analysis on an AnnData object. It computes the product of 
-the sparse matrix with its transpose to identify shared elements, retrieves trait information, 
+This function performs colocalization analysis on an AnnData object. It computes the product of
+the sparse matrix with its transpose to identify shared elements, retrieves trait information,
 and performs colocalization testing on the identified pairs.
 }
 \examples{
@@ -26,7 +26,7 @@ library(dplyr)
 ad <- read_h5ad("/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData/HUVEC_chr22_combined_credible_sets.h5ad")
 ad.coloc <- anndata2coloc(ad[1:10,])
 
-# Store ALL the summary output in a data frame, adding tested traits column and SAVE 
+# Store ALL the summary output in a data frame, adding tested traits column and SAVE
 only_summary_df <- as.data.frame(rbindlist(lapply(ad.coloc, function(x) { x$summary })))
 }
 }
