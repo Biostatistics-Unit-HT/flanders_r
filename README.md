@@ -1,6 +1,11 @@
 # pleisol
 
 ```r
+
+reticulate::use_virtualenv("~/rstudio/virtualenvs/r-reticulate", required = TRUE)
+
+anndata <- reticulate::import("anndata")
+
 library(pleisol)
 library(data.table)
 library(dplyr)
