@@ -5,3 +5,4 @@
 NULL
 
 #' @docType import
+.datatable.aware = TRUE

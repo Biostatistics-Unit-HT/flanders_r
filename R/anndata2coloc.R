@@ -8,6 +8,11 @@
 #'
 #' @return A list of colocalization results for each pair of traits.
 #' @export
+#' @import data.table
+#' @import dplyr
+#' @import anndata
+#' @import coloc
+#' @import Matrix
 #'
 #' @examples
 #' \dontrun{
@@ -23,9 +28,7 @@
 #' }
 anndata2coloc <- function(ad) {
 
-  library(Matrix)
-
-  matrix_product <- ad$X %*% t(ad$X)
+  matrix_product <- ad$X %*% Matrix::t(ad$X)
 
   # Set the diagonal to zero (as each vector will have 1s on diagonal)
   diag(matrix_product) <- 0
@@ -45,14 +48,14 @@ anndata2coloc <- function(ad) {
   # Retrieve trait info
   coloc_combo <- merge(
     shared_elements_unique,
-    ad$obs %>% select(-panel),
+    ad$obs %>% select(-"panel"),
     by.x = "t1",
     by.y = "cs_name"
   )
 
   coloc_combo <- merge(
     coloc_combo,
-    ad$obs %>% select(-panel),
+    ad$obs %>% select(-"panel"),
     by.x = "t2",
     by.y = "cs_name",
     suffixes = c("_t1", "_t2")

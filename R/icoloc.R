@@ -21,8 +21,8 @@
 #' print(result$results)
 #' }
 icoloc.ht <- function(
-    df1 = dataset1,
-    df2 = dataset2,
+    df1,
+    df2,
     p1 = 1e-4,
     p2 = 1e-4,
     p12 = 1e-5
@@ -56,7 +56,7 @@ icoloc.ht <- function(
   colo.sum <- data.frame(t(colo.res$summary))
 
   ## Save coloc result by SNP
-  colo.full_res <- colo.res$results %>% dplyr::select(snp, lABF.df1, lABF.df2, SNP.PP.H4)
+  colo.full_res <- colo.res$results %>% dplyr::select("snp", "lABF.df1", "lABF.df2", "SNP.PP.H4")
 
   ## Organise all in a list (composed of summary + results)
   coloc.final <- list(summary = colo.sum, results = colo.full_res)

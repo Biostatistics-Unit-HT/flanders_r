@@ -4,7 +4,7 @@
 \alias{icoloc.ht}
 \title{Perform Colocalization Analysis Using lABF Values}
 \usage{
-icoloc.ht(df1 = dataset1, df2 = dataset2, p1 = 1e-04, p2 = 1e-04, p12 = 1e-05)
+icoloc.ht(df1, df2, p1 = 1e-04, p2 = 1e-04, p12 = 1e-05)
 }
 \arguments{
 \item{df1}{A data frame for the first dataset containing SNPs and their lABF values.}

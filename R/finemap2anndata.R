@@ -13,6 +13,9 @@
 #'
 #' @return The AnnData object containing the sparse matrix of lABF values and metadata.
 #' @export
+#' @import data.table
+#' @import dplyr
+#' @import anndata
 #'
 #' @examples
 #' \dontrun{
@@ -99,11 +102,6 @@ finemap2anndata <- function(
     panel = NULL
 ){
 
-  library(anndata)
-  library(data.table)
-  library(dplyr)
-  library(Matrix)
-
   # Initialize a list to store the filtered data
   filtered_data_list <- list()
 
@@ -135,7 +133,7 @@ finemap2anndata <- function(
   credible_sets <- names(filtered_data_list)
 
   # Create a sparse matrix to store lABF values
-  lABF_matrix_sparse <- Matrix(
+  lABF_matrix_sparse <- Matrix::Matrix(
     0,
     nrow = length(credible_sets),
     ncol = length(all_snps),
@@ -160,7 +158,7 @@ finemap2anndata <- function(
   print("Creating AnnData object...")
 
   # Convert the sparse matrix to an AnnData object
-  ad <- AnnData(X = lABF_matrix_sparse)
+  ad <- anndata::AnnData(X = lABF_matrix_sparse)
 
   print("Creating obs meta data...")
 
