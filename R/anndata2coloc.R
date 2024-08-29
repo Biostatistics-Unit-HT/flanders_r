@@ -37,7 +37,7 @@ anndata2coloc <- function(ad) {
   shared_elements_df <- as.data.frame(shared_elements)
 
   # Map row and column indices to credible set names
-  shared_elements_df$row <- rownames(shared_elements_df)
+  shared_elements_df$row <- rownames(shared_elements)
   shared_elements_df$col <- colnames(matrix_product)[shared_elements_df$col]
 
   # Keep unique pairs
