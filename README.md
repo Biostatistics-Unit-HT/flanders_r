@@ -34,6 +34,8 @@ chr22_molQTL_ad <- finemap2anndata(
   panel = "HRC"
 )
 
+chr22_molQTL_ad$obs$study_id <- str_extract(chr22_molQTL_ad$obs$cs_name, "^[A-Za-z]+_chr[0-9]+")[414:416]
+
 # Perform colocalization analysis on the GWAS AnnData object
 gwas_ad.coloc <- anndata2coloc(gwas_ad)
 
