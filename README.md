@@ -34,6 +34,8 @@ chr22_molQTL_ad <- finemap2anndata(
   panel = "HRC"
 )
 
+library(stringr)
+
 chr22_molQTL_ad$obs$study_id <- str_extract(chr22_molQTL_ad$obs$cs_name, "^[A-Za-z]+_chr[0-9]+")
 
 chr22_molQTL_ad$obs$phenotype_id <- str_match(chr22_molQTL_ad$obs$cs_name, "chr[0-9]+_([^_]+_[0-9]+|ENSG[0-9]+)")[,2]
