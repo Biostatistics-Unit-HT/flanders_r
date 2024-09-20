@@ -40,4 +40,3 @@ fwrite(coloc_guide_table,file = "/Users/sodbo.sharapov/OneDrive - Htechnopole/00
 }
 
 }
-
