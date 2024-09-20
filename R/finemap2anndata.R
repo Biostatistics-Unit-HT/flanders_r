@@ -109,19 +109,52 @@ finemap2anndata <- function(
   print("Reading finemap files...")
 
   min_res_labf <- c()
+  
+  # Initialize counters and lists
+  failed_files <- c()  # to store failed files
+  success_count <- 0      # to count successful reads
+  failed_count <- 0       # to count failed reads
 
   for (finemap_file in finemap_files) {
+    
+    # Try to read the .rds file and catch any errors or warnings
+    result <- tryCatch({
+      finemap <- data.table::data.table(readRDS(finemap_file))
+      if("pC" %in% colnames(finemap))
+        finemap <- finemap %>% rename(p=pC)
+      
+      success_count <- success_count + 1
+      
+      # If successful, continue with the rest of the operations
+      min_res_labf <- c(min_res_labf, min(finemap$lABF))
+      
+      # Filter rows where is_cs is TRUE
+      filtered_finemap <- finemap[is_cs == TRUE]
+      
+      # Append the filtered data to the list
+      filtered_data_list[[basename(finemap_file)]] <- filtered_finemap
+      
+      NULL  # return NULL on success so tryCatch does not return a value
+    }, error = function(e) {
+      # On error, append the file name to the failed files list
+      failed_files <<- c(failed_files,basename(finemap_file))
+      failed_count <<- failed_count + 1
+      #message(paste("Error in reading file:", basename(finemap_file), "- Skipping"))
+      NULL  # return NULL on error
+    })
+  }
 
-    # Read the .rds file
-    finemap <- data.table::data.table(readRDS(finemap_file))
-
-    min_res_labf <- c(min_res_labf,min(finemap$lABF))
-
-    # Filter rows where is_cs is TRUE
-    filtered_finemap <- finemap[is_cs == TRUE]
-
-    # Append the filtered data to the list
-    filtered_data_list[[basename(finemap_file)]] <- filtered_finemap
+  
+  study_id <- study_id[-sapply(failed_files,function(x) grep(x,finemap_files))]
+  phenotype_id <- phenotype_id[-sapply(failed_files,function(x) grep(x,finemap_files))]
+  
+  # Output how many files were successfully read and how many failed
+  cat("Number of successfully read files:", success_count, "\n")
+  cat("Number of failed files:", failed_count, "\n")
+  if (length(failed_files) > 0) {
+    cat("Failed files:", paste(unlist(failed_files), collapse = ", "), "\n")
+  } else {
+    cat("Failed files: None\n")
   }
 
   # Collect all unique SNPs
@@ -152,7 +185,7 @@ finemap2anndata <- function(
     col_indices <- element_indices[credible_data$snp]
     lABF_values <- credible_data$lABF
     lABF_matrix_sparse[row_index, col_indices] <- lABF_values
-    top_pvalue <- c(top_pvalue,min(credible_data$pC))
+    top_pvalue <- c(top_pvalue,min(credible_data$p))
   }
 
   print("Creating AnnData object...")
@@ -164,7 +197,7 @@ finemap2anndata <- function(
 
   # Extract start and end positions from the credible set names
   get_chr_start_end <- function(file_name) {
-    pattern <- "locus_(chr[0-9XY]+)_([0-9]+)_([0-9]+)_finemap.rds"
+    pattern <- "locus_(chr[0-9XY]+)_([0-9]+)_([0-9]+)_susie_finemap.rds"
     matches <- regmatches(file_name, regexec(pattern, file_name))
     chr_start_end <- unlist(lapply(matches, function(x) x[2:4]))
     return(chr_start_end)
@@ -189,10 +222,10 @@ finemap2anndata <- function(
   # Assign the data frame to ad$obs
   ad$obs <- obs_df
 
-  print("Writing AnnData to a disk...")
+  #print("Writing AnnData to a disk...")
 
   # Save the AnnData object to .h5ad file
-  ad$write_h5ad(output_file)
+  #ad$write_h5ad(output_file)
 
   print("Done...")
 
