@@ -144,14 +144,15 @@ finemap2anndata <- function(
     })
   }
 
-  
-  study_id <- study_id[-sapply(failed_files,function(x) grep(x,finemap_files))]
-  phenotype_id <- phenotype_id[-sapply(failed_files,function(x) grep(x,finemap_files))]
+  if(!is.null(failed_files)){
+    study_id <- study_id[-sapply(failed_files,function(x) grep(x,finemap_files))]
+    phenotype_id <- phenotype_id[-sapply(failed_files,function(x) grep(x,finemap_files))]
+  }
   
   # Output how many files were successfully read and how many failed
   cat("Number of successfully read files:", success_count, "\n")
   cat("Number of failed files:", failed_count, "\n")
-  if (length(failed_files) > 0) {
+  if (!is.null(failed_files)) {
     cat("Failed files:", paste(unlist(failed_files), collapse = ", "), "\n")
   } else {
     cat("Failed files: None\n")
