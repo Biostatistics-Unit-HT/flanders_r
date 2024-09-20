@@ -197,9 +197,15 @@ finemap2anndata <- function(
 
   # Extract start and end positions from the credible set names
   get_chr_start_end <- function(file_name) {
-    pattern <- "locus_(chr[0-9XY]+)_([0-9]+)_([0-9]+)_susie_finemap.rds"
+    # Modify the pattern to capture both 'susie' and 'cojo'
+    pattern <- "locus_(chr[0-9XY]+)_([0-9]+)_([0-9]+)_(susie|cojo)_finemap.rds"
+    
+    # Use regmatches and regexec to extract matches
     matches <- regmatches(file_name, regexec(pattern, file_name))
+    
+    # Extract chromosome, start, and end positions
     chr_start_end <- unlist(lapply(matches, function(x) x[2:4]))
+    
     return(chr_start_end)
   }
 
