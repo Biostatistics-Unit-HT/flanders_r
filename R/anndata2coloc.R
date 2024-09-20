@@ -21,6 +21,7 @@
 #' library(data.table)
 #' library(dplyr)
 #'
+<<<<<<< HEAD
 #' chr22_molQTL_ad <- read_h5ad("/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData/HUVEC_chr22_combined_credible_sets.h5ad")
 #' 
 #' chr22_molQTL_ad$obs$study_id <- str_extract(chr22_molQTL_ad$obs$cs_name, "^[A-Za-z]+_chr[0-9]+")
@@ -34,6 +35,15 @@
 #'} 
 anndata2coloc <- function(ad, coloc_input) {
   
+=======
+#' ad <- read_h5ad("/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData/HUVEC_chr22_combined_credible_sets.h5ad")
+#' ad.coloc <- anndata2coloc(ad[1:10,])
+#'
+#' # Store ALL the summary output in a data frame, adding tested traits column and SAVE
+#' only_summary_df <- as.data.frame(rbindlist(lapply(ad.coloc, function(x) { x$summary })))
+#' }
+anndata2coloc <- function(ad, coloc_input) {
+
   ###### COLOCALIZATION ######
   
   # Split the dataframe into a list of rows
@@ -90,9 +100,9 @@ anndata2coloc <- function(ad, coloc_input) {
     
   })
   
-  # Store ALL the summary output in a data frame, adding tested traits column and SAVE
+# Store ALL the summary output in a data frame, adding tested traits column and SAVE
   only_summary_df <- as.data.frame(rbindlist(lapply(coloc.full, function(x) { x$summary })))
-  
+
   return(only_summary_df)
-  
+
 }

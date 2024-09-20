@@ -10,10 +10,10 @@ anndata2coloc_input(ad)
 \item{ad}{An AnnData object containing genetic data.}
 }
 \value{
-A data.frame with colnames of t2, t1, t1_study_id,t1_phenotype_id, 
+A data.frame with colnames of t2, t1, t1_study_id,t1_phenotype_id,
 t1_top_pvalue, t2_study_id, t2_phenotype_id, t2_top_pvalue. Each row
-represents a pariwise colocalization test which is needed to be completed. 
-This aata.frame, written on hard drive as CSV file is an input for 
+represents a pariwise colocalization test which is needed to be completed.
+This aata.frame, written on hard drive as CSV file is an input for
 anndata2coloc function.
 }
 \description{
@@ -40,3 +40,4 @@ fwrite(coloc_guide_table,file = "/Users/sodbo.sharapov/OneDrive - Htechnopole/00
 }
 
 }
+
