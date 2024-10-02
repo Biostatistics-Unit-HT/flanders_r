@@ -199,7 +199,7 @@ finemap2anndata <- function(
   # Extract start and end positions from the credible set names
   get_chr_start_end <- function(file_name) {
     # Modify the pattern to capture both 'susie' and 'cojo'
-    pattern <- "locus_(chr[0-9XY]+)_([0-9]+)_([0-9]+)_(susie|cojo)_finemap.rds"
+    pattern <- "locus_(chr[0-9XY]+)_([0-9]+)_([0-9]+)(_susie|_cojo)?_finemap\\.rds$"
     
     # Use regmatches and regexec to extract matches
     matches <- regmatches(file_name, regexec(pattern, file_name))
