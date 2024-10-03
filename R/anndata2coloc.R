@@ -78,7 +78,7 @@ anndata2coloc <- function(ad, coloc_input) {
     # Add top cojo SNPs and traits
     icoloc.res$summary <- icoloc.res$summary %>%
       mutate(
-        t1_study_id = coloc_combo_row$t1_sty_id,
+        t1_study_id = coloc_combo_row$t1_study_id,
         t1 = t1,
         t2_study_id = coloc_combo_row$t2_study_id,
         t2 = t2,
