@@ -7,9 +7,11 @@
 #'
 #' @param finemap_files A character vector of file paths to the finemap `.rds` files.
 #' @param study_id A character vector specifying the study_id for each of the finemap_files
+#' @param snp_panel A character vector specifying the list of SNPs for anndata$X vars. For example,
+#' snp_panel can have length of 9M SNPs and resulted AnnData will have X with n(vars) = 9M
 #' @param phenotype_id A character vector specifying the phenotype_id for each of the finemap_files
-#' @param output_file A character string specifying the path to save the resulting AnnData object as an `.h5ad` file.
 #' @param panel A character string specifying the SNP genotyping/imputation panel
+#'
 #'
 #' @return The AnnData object containing the sparse matrix of lABF values and metadata.
 #' @export
@@ -61,33 +63,23 @@
 #' finemap_chr22_ChipSeq_files <- list.files(finemap_folder, pattern = "^ChipSeq.*\\chr22.*\\.rds", full.names = TRUE)
 #' finemap_chr22_ChipSeq_files <- finemap_chr22_ChipSeq_files[!grepl("GWAS", finemap_chr22_ChipSeq_files)]
 #'
-#' # Define the output file paths
-#' output_file_chr22 <- file.path("/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData", "HUVEC_chr22_combined_credible_sets.h5ad")
-#' output_file_chr21 <- file.path("/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData", "HUVEC_chr21_combined_credible_sets.h5ad")
-#' output_file_chr22_ATAC <- file.path("/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData", "HUVEC_chr22_ATAC_combined_credible_sets.h5ad")
-#' output_file_chr22_ChipSeq <- file.path("/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData", "HUVEC_chr22_ChipSeq_combined_credible_sets.h5ad")
-#'
 #' ad_chr_22 <- finemap2anndata(
 #'   finemap_files = finemap_chr22_files,
-#'   output_file = output_file_chr22,
 #'   panel = "HRC"
 #' )
 #'
 #' ad_chr_21 <- finemap2anndata(
 #'   finemap_files = finemap_chr21_files,
-#'   output_file = output_file_chr21,
 #'   panel = "HRC"
 #' )
 #'
 #' ad_chr_22_ATAC <- finemap2anndata(
 #'   finemap_files = finemap_chr22_ATAC_files,
-#'   output_file = output_file_chr22_ATAC,
 #'   panel = "HRC"
 #' )
 #'
 #' ad_chr_22_ChipSeq <- finemap2anndata(
 #'   finemap_files = finemap_chr22_ChipSeq_files,
-#'   output_file = output_file_chr22_ChipSeq,
 #'   panel = "HRC"
 #' )
 #'
@@ -98,7 +90,7 @@ finemap2anndata <- function(
     finemap_files,
     study_id = NULL,
     phenotype_id = NULL,
-    output_file,
+    snp_panel = NULL,
     panel = NULL
 ){
 
@@ -109,31 +101,31 @@ finemap2anndata <- function(
   print("Reading finemap files...")
 
   min_res_labf <- c()
-  
+
   # Initialize counters and lists
   failed_files <- c()  # to store failed files
   success_count <- 0      # to count successful reads
   failed_count <- 0       # to count failed reads
 
   for (finemap_file in finemap_files) {
-    
+
     # Try to read the .rds file and catch any errors or warnings
     result <- tryCatch({
       finemap <- data.table::data.table(readRDS(finemap_file))
       if("pC" %in% colnames(finemap))
         finemap <- finemap %>% rename(p=pC)
-      
+
       success_count <- success_count + 1
-      
+
       # If successful, continue with the rest of the operations
       min_res_labf <- c(min_res_labf, min(finemap$lABF))
-      
+
       # Filter rows where is_cs is TRUE
       filtered_finemap <- finemap[is_cs == TRUE]
-      
+
       # Append the filtered data to the list
       filtered_data_list[[basename(finemap_file)]] <- filtered_finemap
-      
+
       NULL  # return NULL on success so tryCatch does not return a value
     }, error = function(e) {
       # On error, append the file name to the failed files list
@@ -148,7 +140,7 @@ finemap2anndata <- function(
     study_id <- study_id[-sapply(failed_files,function(x) grep(x,finemap_files))]
     phenotype_id <- phenotype_id[-sapply(failed_files,function(x) grep(x,finemap_files))]
   }
-  
+
   # Output how many files were successfully read and how many failed
   cat("Number of successfully read files:", success_count, "\n")
   cat("Number of failed files:", failed_count, "\n")
@@ -189,6 +181,20 @@ finemap2anndata <- function(
     top_pvalue <- c(top_pvalue,min(credible_data$p))
   }
 
+  if(!is.null(snp_panel)){
+
+    snp_panel_matrix_sparse <- Matrix::Matrix(
+      0,
+      nrow = length(credible_sets),
+      ncol = length(snp_panel[!snp_panel %in% all_snps]),
+      sparse = TRUE,
+      dimnames = list(credible_sets, snp_panel[!snp_panel %in% all_snps])
+    )
+
+    lABF_matrix_sparse <- cbind(lABF_matrix_sparse, snp_panel_matrix_sparse)
+
+  }
+
   print("Creating AnnData object...")
 
   # Convert the sparse matrix to an AnnData object
@@ -200,13 +206,13 @@ finemap2anndata <- function(
   get_chr_start_end <- function(file_name) {
     # Modify the pattern to capture both 'susie' and 'cojo'
     pattern <- "locus_(chr[0-9XY]+)_([0-9]+)_([0-9]+)(_susie|_cojo)?_finemap\\.rds$"
-    
+
     # Use regmatches and regexec to extract matches
     matches <- regmatches(file_name, regexec(pattern, file_name))
-    
+
     # Extract chromosome, start, and end positions
     chr_start_end <- unlist(lapply(matches, function(x) x[2:4]))
-    
+
     return(chr_start_end)
   }
 
