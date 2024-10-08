@@ -107,6 +107,24 @@ finemap2anndata <- function(
   success_count <- 0      # to count successful reads
   failed_count <- 0       # to count failed reads
 
+  # all_snps <- c() # to collect all SNPs, tested in finemapping
+
+  # Extract start and end positions from the credible set names
+  get_chr_start_end <- function(file_name) {
+    # Modify the pattern to capture both 'susie' and 'cojo'
+    pattern <- "locus_(chr[0-9XY]+)_([0-9]+)_([0-9]+)(_susie|_cojo)?_finemap\\.rds$"
+
+    # Use regmatches and regexec to extract matches
+    matches <- regmatches(file_name, regexec(pattern, file_name))
+
+    # Extract chromosome, start, and end positions
+    chr_start_end <- unlist(lapply(matches, function(x) x[2:4]))
+
+    return(chr_start_end)
+  }
+
+  snp_chr_pos <- data.table() # snp, chr and pos columns
+
   for (finemap_file in finemap_files) {
 
     # Try to read the .rds file and catch any errors or warnings
@@ -119,6 +137,17 @@ finemap2anndata <- function(
 
       # If successful, continue with the rest of the operations
       min_res_labf <- c(min_res_labf, min(finemap$lABF))
+
+      snp_chr_pos <- bind_rows(
+        snp_chr_pos,
+        data.table(
+          snp = finemap$snp,
+          chr = get_chr_start_end(finemap_file)[1],
+          pos = finemap$pos
+        )
+      )
+
+      snp_chr_pos <- snp_chr_pos %>% filter(!duplicated(snp))
 
       # Filter rows where is_cs is TRUE
       filtered_finemap <- finemap[is_cs == TRUE]
@@ -151,7 +180,7 @@ finemap2anndata <- function(
   }
 
   # Collect all unique SNPs
-  all_snps <- unique(unlist(lapply(filtered_data_list, function(x) x$snp)))
+  all_snps <- snp_chr_pos$snp
 
   element_indices <- stats::setNames(seq_along(all_snps), all_snps)
 
@@ -181,6 +210,9 @@ finemap2anndata <- function(
     top_pvalue <- c(top_pvalue,min(credible_data$p))
   }
 
+  # This needs to be refactored as now we store chr pos in the ad$var. And it
+  # should be properly filled for this "null" snp_panel_matrix_sparse which is
+  # appended to the lABF_matrix_sparse
   if(!is.null(snp_panel)){
 
     snp_panel_matrix_sparse <- Matrix::Matrix(
@@ -202,25 +234,11 @@ finemap2anndata <- function(
 
   print("Creating obs meta data...")
 
-  # Extract start and end positions from the credible set names
-  get_chr_start_end <- function(file_name) {
-    # Modify the pattern to capture both 'susie' and 'cojo'
-    pattern <- "locus_(chr[0-9XY]+)_([0-9]+)_([0-9]+)(_susie|_cojo)?_finemap\\.rds$"
-
-    # Use regmatches and regexec to extract matches
-    matches <- regmatches(file_name, regexec(pattern, file_name))
-
-    # Extract chromosome, start, and end positions
-    chr_start_end <- unlist(lapply(matches, function(x) x[2:4]))
-
-    return(chr_start_end)
-  }
-
   # Collect chromosome, start, and end positions for each credible set
   chr_start_end_positions <- t(sapply(credible_sets, get_chr_start_end))
   colnames(chr_start_end_positions) <- c("chr", "start", "end")
 
-  # Convert to a data frame and set row names
+  # Fill the ad$obs matrix which describes the credible sets
   obs_df <- as.data.frame(chr_start_end_positions, stringsAsFactors = FALSE)
   obs_df$study_id <- study_id
   obs_df$phenotype_id <- phenotype_id
@@ -230,10 +248,19 @@ finemap2anndata <- function(
   obs_df$min_res_labf <- min_res_labf
   obs_df$panel <- panel
   obs_df$cs_name <- credible_sets
-  rownames(obs_df) <- credible_sets
+  rownames(obs_df) <- credible_sets # THIS IS VERY IMPORTANT TODO
 
   # Assign the data frame to ad$obs
   ad$obs <- obs_df
+
+  print("Creating var meta data...")
+
+  # Fill the ad$var matrix which describes the SNPs
+  var_df <- snp_chr_pos %>% as.data.frame()
+  rownames(var_df) <- snp_chr_pos$snp # THIS IS VERY IMPORTANT TODO
+
+  # Assign the data frame to ad$var
+  ad$var <- var_df
 
   #print("Writing AnnData to a disk...")
 
