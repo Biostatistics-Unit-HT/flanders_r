@@ -43,23 +43,37 @@ anndata2coloc <- function(ad, coloc_input) {
   coloc.full <- lapply(coloc_combo_ls, function(coloc_combo_row) {
 
     # Load-in precomputed lABF
-    dataset1 <- ad$X[coloc_combo_row$t1,]
-    dataset1 <- dataset1[which(dataset1 != 0)]
+    snps_1 <- ad$var %>%
+      filter(
+        chr == ad$obs[coloc_combo_row$t1,"chr"],
+        pos >= ad$obs[coloc_combo_row$t1,"start"] - 100000,
+        pos <= ad$obs[coloc_combo_row$t1,"end"] + 100000
+      ) %>% rownames
 
-    dataset2 <- ad$X[coloc_combo_row$t2,]
-    dataset2 <- dataset2[which(dataset2 != 0)]
+    dataset1 <- ad$X[coloc_combo_row$t1, snps_1]
+    #dataset1 <- dataset1[which(dataset1 != 0)]
+
+    snps_2 <- ad$var %>%
+      filter(
+        chr == ad$obs[coloc_combo_row$t2,"chr"],
+        pos >= ad$obs[coloc_combo_row$t2,"start"] - 100000,
+        pos <= ad$obs[coloc_combo_row$t2,"end"] + 100000
+      ) %>% rownames
+
+    dataset2 <- ad$X[coloc_combo_row$t2, snps_2]
+    #dataset2 <- dataset2[which(dataset2 != 0)]
 
     dataset1 <- impute.labf(
-      snp = union(names(dataset1), names(dataset2)),
-      cred.set = names(dataset1),
-      cred.set.labf = dataset1,
+      snp = intersect(names(dataset1), names(dataset2)),
+      cred.set = names(dataset1)[dataset1 != 0],
+      cred.set.labf = dataset1[dataset1 != 0],
       imputed.labf = ad$obs[coloc_combo_row$t1, "min_res_labf"]
     )
 
     dataset2 <- impute.labf(
-      snp = union(names(dataset2), names(dataset2)),
-      cred.set = names(dataset2),
-      cred.set.labf = dataset2,
+      snp = intersect(names(dataset2), names(dataset2)),
+      cred.set = names(dataset2)[dataset2 != 0],
+      cred.set.labf = dataset2[dataset2 != 0],
       imputed.labf = ad$obs[coloc_combo_row$t2, "min_res_labf"]
     )
 
