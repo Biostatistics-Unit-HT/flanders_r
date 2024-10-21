@@ -1,7 +1,7 @@
 Package: pleisol
 Type: Package
 Title: Pleiotropy Solver
-Version: 0.2.2
+Version: 0.2.3
 Author: Sodbo Sharapov, Arianna Landini, Nicola Pirastu
 Maintainer: Sodbo Sharapov <sodbo.sharapov@fht.org>
 Description: More about what it does (maybe more than one line)

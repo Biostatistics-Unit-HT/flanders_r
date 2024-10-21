@@ -63,15 +63,17 @@ anndata2coloc <- function(ad, coloc_input) {
     dataset2 <- ad$X[coloc_combo_row$t2, snps_2]
     #dataset2 <- dataset2[which(dataset2 != 0)]
 
+   snps_for_coloc <- intersect(names(dataset1), names(dataset2))
+
     dataset1 <- impute.labf(
-      snp = intersect(names(dataset1), names(dataset2)),
+      snp = snps_for_coloc,
       cred.set = names(dataset1)[dataset1 != 0],
       cred.set.labf = dataset1[dataset1 != 0],
       imputed.labf = ad$obs[coloc_combo_row$t1, "min_res_labf"]
     )
 
     dataset2 <- impute.labf(
-      snp = intersect(names(dataset2), names(dataset2)),
+      snp = snps_for_coloc,
       cred.set = names(dataset2)[dataset2 != 0],
       cred.set.labf = dataset2[dataset2 != 0],
       imputed.labf = ad$obs[coloc_combo_row$t2, "min_res_labf"]
