@@ -12,6 +12,7 @@ stages:
 test-job:
   stage: test
   script:
+    # Install coloc, susieR and anndata dependencies
     - Rscript -e "install.packages(c('coloc', 'susieR', 'anndata'))"
     # run the R CMD check on the package (this path)
     - R CMD check ./ --no-manual
@@ -21,6 +22,8 @@ test-job:
 build-job:
   stage: build
   script:
+    # Install coloc, susieR and anndata dependencies
+    - Rscript -e "install.packages(c('coloc', 'susieR', 'anndata'))"
     # install
     - R -e "roxygen2::roxygenise()"
     - R CMD build ./
