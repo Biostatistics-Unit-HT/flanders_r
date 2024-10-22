@@ -63,7 +63,10 @@ anndata2coloc <- function(ad, coloc_input) {
     dataset2 <- ad$X[coloc_combo_row$t2, snps_2]
     #dataset2 <- dataset2[which(dataset2 != 0)]
 
-   snps_for_coloc <- intersect(names(dataset1), names(dataset2))
+   snps_for_coloc <- union(names(dataset1), names(dataset2))
+
+   dataset1 <- dataset1[which(names(dataset1) %in% snps_for_coloc)]
+   dataset2 <- dataset2[which(names(dataset2) %in% snps_for_coloc)]
 
     dataset1 <- impute.labf(
       snp = snps_for_coloc,
