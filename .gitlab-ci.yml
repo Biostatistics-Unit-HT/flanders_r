@@ -12,6 +12,7 @@ stages:
 test-job:
   stage: test
   script:
+    - Rscript -e "install.packages(c('coloc', 'susieR', 'anndata'))"
     # run the R CMD check on the package (this path)
     - R CMD check ./ --no-manual
     # run the devtools test
