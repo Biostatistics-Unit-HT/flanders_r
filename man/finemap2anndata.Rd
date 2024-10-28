@@ -8,7 +8,7 @@ finemap2anndata(
   finemap_files,
   study_id = NULL,
   phenotype_id = NULL,
-  output_file,
+  snp_panel = NULL,
   panel = NULL
 )
 }
@@ -19,7 +19,8 @@ finemap2anndata(
 
 \item{phenotype_id}{A character vector specifying the phenotype_id for each of the finemap_files}
 
-\item{output_file}{A character string specifying the path to save the resulting AnnData object as an `.h5ad` file.}
+\item{snp_panel}{A character vector specifying the list of SNPs for anndata$X vars. For example,
+snp_panel can have length of 9M SNPs and resulted AnnData will have X with n(vars) = 9M}
 
 \item{panel}{A character string specifying the SNP genotyping/imputation panel}
 }
@@ -76,33 +77,23 @@ finemap_chr22_ATAC_files <- finemap_chr22_ATAC_files[!grepl("GWAS", finemap_chr2
 finemap_chr22_ChipSeq_files <- list.files(finemap_folder, pattern = "^ChipSeq.*\\\\chr22.*\\\\.rds", full.names = TRUE)
 finemap_chr22_ChipSeq_files <- finemap_chr22_ChipSeq_files[!grepl("GWAS", finemap_chr22_ChipSeq_files)]
 
-# Define the output file paths
-output_file_chr22 <- file.path("/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData", "HUVEC_chr22_combined_credible_sets.h5ad")
-output_file_chr21 <- file.path("/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData", "HUVEC_chr21_combined_credible_sets.h5ad")
-output_file_chr22_ATAC <- file.path("/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData", "HUVEC_chr22_ATAC_combined_credible_sets.h5ad")
-output_file_chr22_ChipSeq <- file.path("/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData", "HUVEC_chr22_ChipSeq_combined_credible_sets.h5ad")
-
 ad_chr_22 <- finemap2anndata(
   finemap_files = finemap_chr22_files,
-  output_file = output_file_chr22,
   panel = "HRC"
 )
 
 ad_chr_21 <- finemap2anndata(
   finemap_files = finemap_chr21_files,
-  output_file = output_file_chr21,
   panel = "HRC"
 )
 
 ad_chr_22_ATAC <- finemap2anndata(
   finemap_files = finemap_chr22_ATAC_files,
-  output_file = output_file_chr22_ATAC,
   panel = "HRC"
 )
 
 ad_chr_22_ChipSeq <- finemap2anndata(
   finemap_files = finemap_chr22_ChipSeq_files,
-  output_file = output_file_chr22_ChipSeq,
   panel = "HRC"
 )
 
