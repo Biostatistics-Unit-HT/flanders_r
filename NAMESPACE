@@ -3,6 +3,7 @@
 export(anndata2coloc)
 export(anndata2coloc_input)
 export(finemap2anndata)
+export(fix_ad_var)
 export(icoloc.ht)
 export(impute.labf)
 export(susie.cs.ht)

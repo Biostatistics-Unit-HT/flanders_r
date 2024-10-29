@@ -23,14 +23,11 @@
 #'
 #' chr22_molQTL_ad <- read_h5ad("/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData/HUVEC_chr22_combined_credible_sets.h5ad")
 #'
-#' chr22_molQTL_ad$obs$study_id <- str_extract(chr22_molQTL_ad$obs$cs_name, "^[A-Za-z]+_chr[0-9]+")
-#'
-#' chr22_molQTL_ad$obs$phenotype_id <- str_match(chr22_molQTL_ad$obs$cs_name, "chr[0-9]+_([^_]+_[0-9]+|ENSG[0-9]+)")[,2]
-#'
-#' coloc_guide_table <_ anndata2coloc_input(chr22_molQTL_ad)
+#' coloc_guide_table <- anndata2coloc_input(chr22_molQTL_ad)
 #'
 #' coloc_res <- anndata2coloc(chr22_molQTL_ad,coloc_guide_table)
 #'
+#'}
 #'
 anndata2coloc <- function(ad, coloc_input) {
 
