@@ -31,80 +31,21 @@
 #'
 anndata2coloc <- function(ad, coloc_input) {
 
+  list_of_chr <- unique(ad$obs[coloc_input$t1,"chr"])
+
+  print(paste("There are",list_of_chr))
+
+  ad_by_chr <- lapply(list_of_chr,function(chr) {ad[ad$obs$chr == chr, ad$var$chr == chr]})
+
+  names(ad_by_chr) <- as.character(list_of_chr)
+
   ###### COLOCALIZATION ######
 
   # Split the dataframe into a list of rows
   coloc_combo_ls <- split(coloc_input, seq(nrow(coloc_input)))
 
   # Perform coloc!
-  coloc.full <- lapply(coloc_combo_ls, function(coloc_combo_row) {
-
-    # Load-in precomputed lABF
-    snps_1 <- ad$var %>%
-      filter(
-        chr == ad$obs[coloc_combo_row$t1,"chr"],
-        pos >= ad$obs[coloc_combo_row$t1,"start"] - 100000,
-        pos <= ad$obs[coloc_combo_row$t1,"end"] + 100000
-      ) %>% rownames
-
-    dataset1 <- ad$X[coloc_combo_row$t1, snps_1]
-    #dataset1 <- dataset1[which(dataset1 != 0)]
-
-    snps_2 <- ad$var %>%
-      filter(
-        chr == ad$obs[coloc_combo_row$t2,"chr"],
-        pos >= ad$obs[coloc_combo_row$t2,"start"] - 100000,
-        pos <= ad$obs[coloc_combo_row$t2,"end"] + 100000
-      ) %>% rownames
-
-    dataset2 <- ad$X[coloc_combo_row$t2, snps_2]
-    #dataset2 <- dataset2[which(dataset2 != 0)]
-
-   snps_for_coloc <- union(names(dataset1), names(dataset2))
-
-   dataset1 <- dataset1[which(names(dataset1) %in% snps_for_coloc)]
-   dataset2 <- dataset2[which(names(dataset2) %in% snps_for_coloc)]
-
-    dataset1 <- impute.labf(
-      snp = snps_for_coloc,
-      cred.set = names(dataset1)[dataset1 != 0],
-      cred.set.labf = dataset1[dataset1 != 0],
-      imputed.labf = ad$obs[coloc_combo_row$t1, "min_res_labf"]
-    )
-
-    dataset2 <- impute.labf(
-      snp = snps_for_coloc,
-      cred.set = names(dataset2)[dataset2 != 0],
-      cred.set.labf = dataset2[dataset2 != 0],
-      imputed.labf = ad$obs[coloc_combo_row$t2, "min_res_labf"]
-    )
-
-    icoloc.res <- icoloc.ht(
-      dataset1,
-      dataset2
-    )
-
-    # Retrieve important info from file name
-    t1 <- ifelse(is.na(coloc_combo_row$t1_phenotype_id), coloc_combo_row$t1_study_id, paste0(coloc_combo_row$t1_study_id, "_", coloc_combo_row$t1_phenotype_id))
-    cojo_snp1 <- gsub(paste0(t1, "_(.*)_locus_.*_finemap.rds"), "\\1", coloc_combo_row$t1)
-
-    t2 <- ifelse(is.na(coloc_combo_row$t2_phenotype_id), coloc_combo_row$t2_study_id, paste0(coloc_combo_row$t2_study_id, "_", coloc_combo_row$t2_phenotype_id))
-    cojo_snp2 <- gsub(paste0(t2, "_(.*)_locus_.*_finemap.rds"), "\\1", coloc_combo_row$t2)
-
-    # Add top cojo SNPs and traits
-    icoloc.res$summary <- icoloc.res$summary %>%
-      mutate(
-        t1_study_id = coloc_combo_row$t1_study_id,
-        t1 = t1,
-        t2_study_id = coloc_combo_row$t2_study_id,
-        t2 = t2,
-        hit1 = cojo_snp1,
-        hit2 = cojo_snp2
-      )
-
-    icoloc.res
-
-  })
+  coloc.full <- lapply(coloc_combo_ls, anndata2coloc_row,ad_by_chr = ad_by_chr)
 
 # Store ALL the summary output in a data frame, adding tested traits column and SAVE
   only_summary_df <- as.data.frame(rbindlist(lapply(coloc.full, function(x) { x$summary })))

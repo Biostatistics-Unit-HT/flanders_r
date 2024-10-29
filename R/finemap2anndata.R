@@ -256,7 +256,7 @@ finemap2anndata <- function(
   print("Creating var meta data...")
 
   # Fill the ad$var matrix which describes the SNPs
-  var_df <- snp_chr_pos %>% as.data.frame()
+  var_df <- snp_chr_pos %>% as.data.frame(, stringsAsFactors = FALSE)
   rownames(var_df) <- snp_chr_pos$snp # THIS IS VERY IMPORTANT TODO
 
   # Assign the data frame to ad$var

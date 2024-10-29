@@ -33,7 +33,7 @@ fix_ad_var <- function(ad) {
 
   ad$var <- ad$var %>%
     mutate(
-      chr = sub("(:[0-9]+:.*)", "", snp),
+      chr = as.character(sub("(:[0-9]+:.*)", "", snp)),
       pos = as.numeric(sub("chr[0-9]+:([0-9]+):.*", "\\1", snp))
     )
 

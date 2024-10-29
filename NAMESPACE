@@ -2,6 +2,7 @@
 
 export(anndata2coloc)
 export(anndata2coloc_input)
+export(anndata2coloc_row)
 export(finemap2anndata)
 export(fix_ad_var)
 export(icoloc.ht)
