@@ -26,7 +26,9 @@
 
 anndata2coloc_row <- function(coloc_combo_row, ad_by_chr) {
 
-  ad_sm <- ad_by_chr[[ad$obs[coloc_combo_row$t1,"chr"]]]
+  chr_name <- as.character(ad$obs[coloc_combo_row[1,]$t1,"chr"])
+
+  ad_sm <- ad_by_chr[[chr_name]]
 
   loc_start <- min(ad_sm$obs[coloc_combo_row$t1,"start"],ad_sm$obs[coloc_combo_row$t2,"start"])
   loc_start <- loc_start - 1e5
