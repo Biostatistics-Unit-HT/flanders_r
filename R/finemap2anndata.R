@@ -125,11 +125,31 @@ finemap2anndata <- function(
 
   snp_chr_pos <- data.table() # snp, chr and pos columns
 
+  effect_df <- data.frame()
+  qc_metrics_df <- data.frame()
+
   for (finemap_file in finemap_files) {
 
     # Try to read the .rds file and catch any errors or warnings
     result <- tryCatch({
-      finemap <- data.table::data.table(readRDS(finemap_file))
+      finemap <- readRDS(finemap_file)
+
+      # "finemapping_lABFs" "effect"            "qc_metrics"
+
+      if(class(finemap) == "list"){
+        if(!is.null(finemap$effect)){
+          effect_df <- bind_rows(effect_df, finemap$effect)
+        } else{
+          effect_df <- rbind(effect_df, rep(NA,7))
+        }
+        if(!is.null(finemap$qc_metrics)){
+          qc_metrics_df <- bind_rows(qc_metrics_df, finemap$qc_metrics)
+        }else {
+          qc_metrics_df <- rbind(qc_metrics_df, rep(NA,3))
+        }
+        finemap <- finemap$finemapping_lABFs
+      }
+      finemap <- data.table(finemap)
       if("pC" %in% colnames(finemap))
         finemap <- finemap %>% rename(p=pC)
 
@@ -158,6 +178,7 @@ finemap2anndata <- function(
       NULL  # return NULL on success so tryCatch does not return a value
     }, error = function(e) {
       # On error, append the file name to the failed files list
+      print(e)
       failed_files <<- c(failed_files,basename(finemap_file))
       failed_count <<- failed_count + 1
       #message(paste("Error in reading file:", basename(finemap_file), "- Skipping"))
@@ -248,6 +269,7 @@ finemap2anndata <- function(
   obs_df$min_res_labf <- min_res_labf
   obs_df$panel <- panel
   obs_df$cs_name <- credible_sets
+  obs_df <- bind_cols(obs_df,effect_df,qc_metrics_df)
   rownames(obs_df) <- credible_sets # THIS IS VERY IMPORTANT TODO
 
   # Assign the data frame to ad$obs
