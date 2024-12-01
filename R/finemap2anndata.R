@@ -88,6 +88,7 @@
 #' }
 finemap2anndata <- function(
     finemap_files,
+    preloaded_list = FALSE,
     study_id = NULL,
     phenotype_id = NULL,
     snp_panel = NULL,
@@ -128,11 +129,18 @@ finemap2anndata <- function(
   effect_df <- data.frame()
   qc_metrics_df <- data.frame()
 
-  for (finemap_file in finemap_files) {
+  if(!preloaded_list)
+    names(finemap_files) <- finemap_files
+
+  for (finemap_file in names(finemap_files)) {
 
     # Try to read the .rds file and catch any errors or warnings
     result <- tryCatch({
-      finemap <- readRDS(finemap_file)
+      if(preloaded_list){
+        finemap <- finemap_files[[finemap_file]]
+      } else{
+        finemap <- readRDS(finemap_file)
+      }
 
       # "finemapping_lABFs" "effect"            "qc_metrics"
 
@@ -185,6 +193,9 @@ finemap2anndata <- function(
       NULL  # return NULL on error
     })
   }
+
+  if(preloaded_list)
+    finemap_files = names(finemap_files)
 
   if(!is.null(failed_files)){
     study_id <- study_id[-sapply(failed_files,function(x) grep(x,finemap_files))]

@@ -33,8 +33,8 @@ fix_ad_var <- function(ad) {
 
   ad$var <- ad$var %>%
     mutate(
-      chr = as.character(sub("(:[0-9]+:.*)", "", snp)),
-      pos = as.numeric(sub("chr[0-9]+:([0-9]+):.*", "\\1", snp))
+      chr = sub(":.*", "", snp), # Extract everything before the first colon
+      pos = as.numeric(sub(".*:(\\d+):.*", "\\1", snp)) # Extract numeric position after 'chr{chr}:'
     )
 
   ad
