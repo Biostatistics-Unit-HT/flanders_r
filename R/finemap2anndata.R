@@ -124,7 +124,10 @@ finemap2anndata <- function(
     return(chr_start_end)
   }
 
-  snp_chr_pos <- data.table() # snp, chr and pos columns
+  # List of data.tables with snp, chr and pos columns
+  snp_chr_pos <- list()
+
+  #setkey(snp_chr_pos,snp)
 
   effect_df <- data.frame()
   qc_metrics_df <- data.frame()
@@ -166,16 +169,27 @@ finemap2anndata <- function(
       # If successful, continue with the rest of the operations
       min_res_labf <- c(min_res_labf, min(finemap$lABF))
 
-      snp_chr_pos <- bind_rows(
-        snp_chr_pos,
-        data.table(
-          snp = finemap$snp,
-          chr = get_chr_start_end(finemap_file)[1],
-          pos = finemap$pos
-        )
+      new_rows <- data.table(
+        snp = finemap$snp,
+        chr = get_chr_start_end(finemap_file)[1],
+        pos = finemap$pos
       )
 
-      snp_chr_pos <- snp_chr_pos %>% filter(!duplicated(snp))
+      snp_chr_pos[[length(snp_chr_pos) + 1]] <- new_rows
+
+      # Append new rows
+      #snp_chr_pos <- rbindlist(list(snp_chr_pos, new_rows), use.names = TRUE)
+
+      #snp_chr_pos <- bind_rows(
+      #  snp_chr_pos,
+      #  data.table(
+      #    snp = finemap$snp,
+      #    chr = get_chr_start_end(finemap_file)[1],
+      #    pos = finemap$pos
+      #  )
+      #)
+
+      #snp_chr_pos <- snp_chr_pos %>% filter(!duplicated(snp))
 
       # Filter rows where is_cs is TRUE
       filtered_finemap <- finemap[is_cs == TRUE]
@@ -192,7 +206,17 @@ finemap2anndata <- function(
       #message(paste("Error in reading file:", basename(finemap_file), "- Skipping"))
       NULL  # return NULL on error
     })
+    n = which(names(finemap_files) == finemap_file)
+    if(n %% 100 == 0){
+      cat("\rFinished", n, "of", length(finemap_files))
+    }
   }
+
+  snp_chr_pos <- rbindlist(snp_chr_pos, use.names = TRUE)
+
+  snp_chr_pos <- snp_chr_pos %>% filter(!duplicated(snp))
+
+  print(paste0("We have ",nrow(snp_chr_pos)," SNPs in ", length(filtered_data_list), " credible sets."))
 
   if(preloaded_list)
     finemap_files = names(finemap_files)
@@ -203,7 +227,7 @@ finemap2anndata <- function(
   }
 
   # Output how many files were successfully read and how many failed
-  cat("Number of successfully read files:", success_count, "\n")
+  cat("\nNumber of successfully read files:", success_count, "\n")
   cat("Number of failed files:", failed_count, "\n")
   if (!is.null(failed_files)) {
     cat("Failed files:", paste(unlist(failed_files), collapse = ", "), "\n")
@@ -240,6 +264,10 @@ finemap2anndata <- function(
     lABF_values <- credible_data$lABF
     lABF_matrix_sparse[row_index, col_indices] <- lABF_values
     top_pvalue <- c(top_pvalue,min(credible_data$p))
+    n = which(credible_sets == credible_set)
+    if(n %% 10 == 0){
+      cat("\rFinished", n, "of", length(credible_sets))
+    }
   }
 
   # This needs to be refactored as now we store chr pos in the ad$var. And it
@@ -259,7 +287,7 @@ finemap2anndata <- function(
 
   }
 
-  print("Creating AnnData object...")
+  print("\nCreating AnnData object...")
 
   # Convert the sparse matrix to an AnnData object
   ad <- anndata::AnnData(X = lABF_matrix_sparse)

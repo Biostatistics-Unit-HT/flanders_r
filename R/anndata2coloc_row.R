@@ -24,7 +24,7 @@
 #' result <- anndata2coloc_row(coloc_combo_row)
 #' }
 
-anndata2coloc_row <- function(coloc_combo_row, ad_by_chr) {
+anndata2coloc_row <- function(coloc_combo_row, ad_by_chr, ad) {
 
   chr_name <- as.character(ad$obs[coloc_combo_row[1,]$t1,"chr"])
 

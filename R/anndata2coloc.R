@@ -45,7 +45,7 @@ anndata2coloc <- function(ad, coloc_input) {
   coloc_combo_ls <- split(coloc_input, seq(nrow(coloc_input)))
 
   # Perform coloc!
-  coloc.full <- lapply(coloc_combo_ls, anndata2coloc_row,ad_by_chr = ad_by_chr)
+  coloc.full <- lapply(coloc_combo_ls, anndata2coloc_row,ad_by_chr = ad_by_chr, ad = ad)
 
 # Store ALL the summary output in a data frame, adding tested traits column and SAVE
   only_summary_df <- as.data.frame(rbindlist(lapply(coloc.full, function(x) { x$summary })))
