@@ -308,7 +308,11 @@ finemap2anndata <- function(
   obs_df$min_res_labf <- min_res_labf
   obs_df$panel <- panel
   obs_df$cs_name <- credible_sets
-  obs_df <- bind_cols(obs_df,effect_df,qc_metrics_df)
+  if(nrow(effect_df) > 0 & nrow(qc_metrics_df) > 0){
+    obs_df <- bind_cols(obs_df,effect_df,qc_metrics_df)
+  }else{
+    obs_df <- obs_df
+  }
   rownames(obs_df) <- credible_sets # THIS IS VERY IMPORTANT TODO
 
   # Assign the data frame to ad$obs
