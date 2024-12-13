@@ -2,6 +2,19 @@
 
 ```r
 
+## Create conda environment with mamba
+
+mamba create -p <your_folder_with_conda_envs>/pleisol -c conda-forge -c bioconda -c R \
+r-base=4.3 r-susier=0.12.35 r-coloc=5.2.3 r-data.table=1.15.4 r-dplyr=1.1.4 r-anndata=0.7.5.6 r-mixsqp=0.3_54
+
+
+For MacOS arm:
+mamba create -p your_folder_with_conda_envs>/pleisol -c dnachun -c conda-forge -c bioconda -c R \
+r-base=4.3 r-susier=0.12.35 r-coloc=5.2.3 r-data.table=1.15.4 r-dplyr=1.1.4 r-anndata=0.7.5.6 r-mixsqp=0.3_54
+
+After creation of conda env, you should additionally install matrix package from 
+https://cran.r-project.org/src/contrib/Archive/Matrix/Matrix_1.5-4.tar.gz
+
 reticulate::use_virtualenv("~/rstudio/virtualenvs/r-reticulate", required = TRUE)
 
 anndata <- reticulate::import("anndata")
