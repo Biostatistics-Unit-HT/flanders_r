@@ -161,8 +161,11 @@ finemap2anndata <- function(
         finemap <- finemap$finemapping_lABFs
       }
       finemap <- data.table(finemap)
-      if("pC" %in% colnames(finemap))
+      if("pC" %in% colnames(finemap) & !("p" %in% colnames(finemap)))
         finemap <- finemap %>% rename(p=pC)
+
+      if("bC" %in% colnames(finemap) & !("b" %in% colnames(finemap)))
+        finemap <- finemap %>% rename(b=bC)
 
       success_count <- success_count + 1
 
@@ -216,6 +219,7 @@ finemap2anndata <- function(
 
   snp_chr_pos <- snp_chr_pos %>% filter(!duplicated(snp))
 
+  print("")
   print(paste0("We have ",nrow(snp_chr_pos)," SNPs in ", length(filtered_data_list), " credible sets."))
 
   if(preloaded_list)
@@ -252,6 +256,24 @@ finemap2anndata <- function(
     dimnames = list(credible_sets, all_snps)
   )
 
+  # Create a sparse matrix to store betas
+  beta_matrix_sparse <- Matrix::Matrix(
+    0,
+    nrow = length(credible_sets),
+    ncol = length(all_snps),
+    sparse = TRUE,
+    dimnames = list(credible_sets, all_snps)
+  )
+
+  # Create a sparse matrix to store se
+  se_matrix_sparse <- Matrix::Matrix(
+    0,
+    nrow = length(credible_sets),
+    ncol = length(all_snps),
+    sparse = TRUE,
+    dimnames = list(credible_sets, all_snps)
+  )
+
   print("Populating sparse matrix...")
 
   top_pvalue <- c()
@@ -261,8 +283,23 @@ finemap2anndata <- function(
     credible_data <- filtered_data_list[[credible_set]]
     row_index <- match(credible_set, credible_sets)
     col_indices <- element_indices[credible_data$snp]
+
     lABF_values <- credible_data$lABF
+    beta_values <- credible_data$b
+
+    if(all(c("b","p") %in% colnames(credible_data)))
+      se_values <- abs(
+        1/(
+          sqrt(
+            qchisq(credible_data$p,df=1,lower.tail=FALSE)
+            ) / credible_data$b
+          )
+      )
+
     lABF_matrix_sparse[row_index, col_indices] <- lABF_values
+    beta_matrix_sparse[row_index, col_indices] <- beta_values
+    se_matrix_sparse[row_index, col_indices] <- se_values
+
     top_pvalue <- c(top_pvalue,min(credible_data$p))
     n = which(credible_sets == credible_set)
     if(n %% 10 == 0){
@@ -284,13 +321,21 @@ finemap2anndata <- function(
     )
 
     lABF_matrix_sparse <- cbind(lABF_matrix_sparse, snp_panel_matrix_sparse)
+    beta_matrix_sparse <- cbind(beta_matrix_sparse, snp_panel_matrix_sparse)
+    se_matrix_sparse <- cbind(se_matrix_sparse, snp_panel_matrix_sparse)
 
   }
 
-  print("\nCreating AnnData object...")
+  print("Creating AnnData object...")
 
   # Convert the sparse matrix to an AnnData object
+  # TODO - AnnData shoould be created in the end using single call of anndata
+  # function - so X, obs, var and layer goes together
+
   ad <- anndata::AnnData(X = lABF_matrix_sparse)
+
+  ad$layers[["beta"]] <- beta_matrix_sparse
+  ad$layers[["se"]] <- se_matrix_sparse
 
   print("Creating obs meta data...")
 
