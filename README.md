@@ -61,6 +61,7 @@ print(gwas_ad.coloc$summary)
 
 # View detailed results by SNP
 print(gwas_ad.coloc$results)
+```
 
 ## Data Column Specifications
 
@@ -106,7 +107,7 @@ print(gwas_ad.coloc$results)
 
 #### Good to Have
 
-| Column Name   | Format / Content   | Description                                                                                           |
-| ------------- | ------------------ | ----------------------------------------------------------------------------------------------------- |
+| Column Name   | Format / Content   | Description                                                                                            |
+| ------------- | ------------------ | ------------------------------------------------------------------------------------------------------ |
 | `top_pvalue`  | Numeric            | Lowest (either nominal or conditional) P-value of genetic association in the locus (useful for filtering). |
-| `panel`       | String             | Name of the imputation panel used.                                                                    |
+| `panel`       | String             | Name of the imputation panel used.                                                                     |
