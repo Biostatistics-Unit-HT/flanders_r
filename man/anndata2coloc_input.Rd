@@ -2,11 +2,14 @@
 % Please edit documentation in R/anndata2coloc_input.R
 \name{anndata2coloc_input}
 \alias{anndata2coloc_input}
-\title{Perform Colocalization Analysis on AnnData Object}
+\title{Convert AnnData or SingleCellExperiment to Coloc Input}
 \usage{
-anndata2coloc_input(ad)
+anndata2coloc_input(ad_or_sce)
 }
 \arguments{
+\item{ad_or_sce}{An AnnData or SingleCellExperiment object containing 
+credible sets data. The `obs` metadata should include a `cs_name` field.}
+
 \item{ad}{An AnnData object containing genetic data.}
 }
 \value{
@@ -15,28 +18,48 @@ t1_top_pvalue, t2_study_id, t2_phenotype_id, t2_top_pvalue. Each row
 represents a pariwise colocalization test which is needed to be completed.
 This aata.frame, written on hard drive as CSV file is an input for
 anndata2coloc function.
+
+A data frame formatted for coloc analysis, saved as a CSV file.
 }
 \description{
+This script demonstrates how to process credible sets data 
+stored in an AnnData or SingleCellExperiment object to generate input for 
+coloc analysis. It extracts relevant metadata, such as study IDs and 
+phenotype IDs, and formats the data into a table suitable for coloc.
+}
+\details{
+Perform Colocalization Analysis on AnnData Object
+
 This function inputs AnnData objec and retrun csv file for coloc nextflow
 pipeline. It computes the product of the sparse matrix with its transpose to
 identify shared elements, retrieves trait information,#' and performs
 colocalization testing on the identified pairs.
+
+
+The script assumes that the input data is stored in an AnnData object 
+(e.g., `.h5ad` file) or a SingleCellExperiment object. It extracts the 
+`study_id` and `phenotype_id` from the `cs_name` field in the `obs` 
+(observations) metadata. The resulting table is saved as a CSV file for 
+downstream coloc analysis.
 }
 \examples{
 \dontrun{
-library(anndata)
-library(data.table)
-library(dplyr)
+# Load AnnData object
+chr22_molQTL_ad <- read_h5ad("/path/to/HUVEC_chr22_combined_credible_sets.h5ad")
 
-chr22_molQTL_ad <- read_h5ad("/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData/HUVEC_chr22_combined_credible_sets.h5ad")
-
+# Extract study and phenotype IDs
 chr22_molQTL_ad$obs$study_id <- str_extract(chr22_molQTL_ad$obs$cs_name, "^[A-Za-z]+_chr[0-9]+")
-
 chr22_molQTL_ad$obs$phenotype_id <- str_match(chr22_molQTL_ad$obs$cs_name, "chr[0-9]+_([^_]+_[0-9]+|ENSG[0-9]+)")[,2]
 
+# Generate coloc input table
 coloc_guide_table <- anndata2coloc_input(chr22_molQTL_ad)
 
-fwrite(coloc_guide_table,file = "/Users/sodbo.sharapov/OneDrive - Htechnopole/00_Sodbo_Projects/anndata/data/coloc_duie_table.csv")
+# Save the table to a CSV file
+fwrite(coloc_guide_table, file = "/path/to/coloc_guide_table.csv")
 }
 
+}
+\seealso{
+\code{\link[anndata]{read_h5ad}} for reading AnnData files.
+\code{\link[data.table]{fwrite}} for writing data to CSV files.
 }

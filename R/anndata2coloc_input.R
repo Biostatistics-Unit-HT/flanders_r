@@ -67,8 +67,6 @@
 #' @seealso 
 #' \code{\link[anndata]{read_h5ad}} for reading AnnData files.
 #' \code{\link[data.table]{fwrite}} for writing data to CSV files.
-#' 
-#' @export
 
 anndata2coloc_input <- function(ad_or_sce) {
   is_sce <- inherits(ad_or_sce, "SingleCellExperiment")
