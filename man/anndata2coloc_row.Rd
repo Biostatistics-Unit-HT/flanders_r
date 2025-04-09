@@ -28,6 +28,6 @@ colocalization probabilities between two datasets.
 coloc_input <- anndata2coloc_input(ad)
 coloc_combo_row <- coloc_input[1,]
 # Example usage of anndata2coloc_row
-result <- anndata2coloc_row(coloc_combo_row)
+result <- anndata2coloc_row(coloc_combo_row, ad_by_chr)
 }
 }

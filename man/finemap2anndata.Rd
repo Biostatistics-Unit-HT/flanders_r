@@ -6,6 +6,7 @@
 \usage{
 finemap2anndata(
   finemap_files,
+  preloaded_list = FALSE,
   study_id = NULL,
   phenotype_id = NULL,
   snp_panel = NULL,
@@ -15,14 +16,15 @@ finemap2anndata(
 \arguments{
 \item{finemap_files}{A character vector of file paths to the finemap `.rds` files.}
 
-\item{study_id}{A character vector specifying the study_id for each of the finemap_files}
+\item{preloaded_list}{A logical value indicating whether the input is a preloaded list of finemap data.}
 
-\item{phenotype_id}{A character vector specifying the phenotype_id for each of the finemap_files}
+\item{study_id}{A character vector specifying the study_id for each of the finemap_files.}
 
-\item{snp_panel}{A character vector specifying the list of SNPs for anndata$X vars. For example,
-snp_panel can have length of 9M SNPs and resulted AnnData will have X with n(vars) = 9M}
+\item{phenotype_id}{A character vector specifying the phenotype_id for each of the finemap_files.}
 
-\item{panel}{A character string specifying the SNP genotyping/imputation panel}
+\item{snp_panel}{A character vector specifying the list of SNPs for AnnData's `X` vars.}
+
+\item{panel}{A character string specifying the SNP genotyping/imputation panel.}
 }
 \value{
 The AnnData object containing the sparse matrix of lABF values and metadata.

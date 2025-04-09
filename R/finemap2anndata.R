@@ -6,11 +6,11 @@
 #' includes metadata about the start and end positions of each credible set.
 #'
 #' @param finemap_files A character vector of file paths to the finemap `.rds` files.
-#' @param study_id A character vector specifying the study_id for each of the finemap_files
-#' @param snp_panel A character vector specifying the list of SNPs for anndata$X vars. For example,
-#' snp_panel can have length of 9M SNPs and resulted AnnData will have X with n(vars) = 9M
-#' @param phenotype_id A character vector specifying the phenotype_id for each of the finemap_files
-#' @param panel A character string specifying the SNP genotyping/imputation panel
+#' @param preloaded_list A logical value indicating whether the input is a preloaded list of finemap data.
+#' @param study_id A character vector specifying the study_id for each of the finemap_files.
+#' @param phenotype_id A character vector specifying the phenotype_id for each of the finemap_files.
+#' @param snp_panel A character vector specifying the list of SNPs for AnnData's `X` vars.
+#' @param panel A character string specifying the SNP genotyping/imputation panel.
 #'
 #'
 #' @return The AnnData object containing the sparse matrix of lABF values and metadata.

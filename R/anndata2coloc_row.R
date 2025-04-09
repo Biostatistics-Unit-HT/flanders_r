@@ -21,10 +21,10 @@
 #' coloc_input <- anndata2coloc_input(ad)
 #' coloc_combo_row <- coloc_input[1,]
 #' # Example usage of anndata2coloc_row
-#' result <- anndata2coloc_row(coloc_combo_row)
+#' result <- anndata2coloc_row(coloc_combo_row, ad_by_chr)
 #' }
 
-anndata2coloc_row <- function(coloc_combo_row, ad_by_chr, ad) {
+anndata2coloc_row <- function(coloc_combo_row, ad_by_chr) {
 
   chr_name <- as.character(coloc_combo_row$chr[1])
 
