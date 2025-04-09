@@ -59,14 +59,14 @@ anndata2coloc_input <- function(ad) {
   # Retrieve trait info
   coloc_combo <- merge(
     shared_elements_unique,
-    ad$obs %>% select(-"panel"),
+    ad$obs %>% select(-any_of("panel")),
     by.x = "t1",
     by.y = "cs_name"
   )
 
   coloc_combo <- merge(
     coloc_combo,
-    ad$obs %>% select(-"panel"),
+    ad$obs %>% select(-any_of("panel")),
     by.x = "t2",
     by.y = "cs_name",
     suffixes = c("_t1", "_t2")
@@ -75,20 +75,34 @@ anndata2coloc_input <- function(ad) {
   # Remove pair testing different conditional dataset for the same trait (study_id + phenotype_id)
   coloc_combo <- coloc_combo %>%
     dplyr::filter(study_id_t1 != study_id_t2 | (study_id_t1 == study_id_t2 & phenotype_id_t1 != phenotype_id_t2)) %>%
-    dplyr::select(-chr_t1, -chr_t2, -contains("start"), -contains("end"))
+    dplyr::select(-chr_t2, -contains("start"), -contains("end"))
 
   coloc_combo <- coloc_combo %>%
+    mutate(chr = chr_t1) %>%
     select(
-      t2,t1,
-      study_id_t1,phenotype_id_t1,top_pvalue_t1,
-      study_id_t2,phenotype_id_t2,top_pvalue_t2
+      t2, t1,
+      study_id_t1, phenotype_id_t1, any_of("top_pvalue_t1"),
+      study_id_t2, phenotype_id_t2, any_of("top_pvalue_t2"),
+      chr
     )
 
-  colnames(coloc_combo) <- c(
-    "t2", "t1",
-    "t1_study_id", "t1_phenotype_id", "t1_top_pvalue",
-    "t2_study_id", "t2_phenotype_id", "t2_top_pvalue"
-  )
+  if (ncol(coloc_combo) == 9) {
+    colnames(coloc_combo) <- c(
+      "t2", "t1",
+      "t1_study_id", "t1_phenotype_id", "t1_top_pvalue",
+      "t2_study_id", "t2_phenotype_id", "t2_top_pvalue",
+      "chr"
+    )
+  } else if (ncol(coloc_combo) == 7) {
+    colnames(coloc_combo) <- c(
+      "t2", "t1",
+      "t1_study_id", "t1_phenotype_id",
+      "t2_study_id", "t2_phenotype_id",
+      "chr"
+    )
+  } else {
+    stop("Unexpected number of columns in coloc_combo")
+  }
 
   return(coloc_combo)
 }
