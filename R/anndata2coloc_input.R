@@ -5,7 +5,7 @@
 #' identify shared elements, retrieves trait information,#' and performs
 #' colocalization testing on the identified pairs.
 #'
-#' @param ad An AnnData object containing genetic data.
+#' @param ad_or_sce An AnnData or SingleCellExperiment object containing genetic data.
 #'
 #' @return A data.frame with colnames of t2, t1, t1_study_id,t1_phenotype_id,
 #' t1_top_pvalue, t2_study_id, t2_phenotype_id, t2_top_pvalue. Each row
@@ -22,12 +22,6 @@
 #' @import zellkonverter
 #' @import SingleCellExperiment
 #' @import scRNAseq
-#' 
-#' @examples
-#' \dontrun{
-#' library(anndata)
-#' library(data.table)
-#' library(dplyr)
 #'
 #' @title Convert AnnData or SingleCellExperiment to Coloc Input
 #' 
@@ -48,18 +42,25 @@
 #' 
 #' @return A data frame formatted for coloc analysis, saved as a CSV file.
 #' 
-#' @examples 
+#' @examples
 #' \dontrun{
+#' library(anndata)
+#' library(data.table)
+#' library(dplyr)
+#'
 #' # Load AnnData object
 #' chr22_molQTL_ad <- read_h5ad("/path/to/HUVEC_chr22_combined_credible_sets.h5ad")
-#' 
+#'
 #' # Extract study and phenotype IDs
 #' chr22_molQTL_ad$obs$study_id <- str_extract(chr22_molQTL_ad$obs$cs_name, "^[A-Za-z]+_chr[0-9]+")
-#' chr22_molQTL_ad$obs$phenotype_id <- str_match(chr22_molQTL_ad$obs$cs_name, "chr[0-9]+_([^_]+_[0-9]+|ENSG[0-9]+)")[,2]
-#' 
+#' chr22_molQTL_ad$obs$phenotype_id <- str_match(
+#'   chr22_molQTL_ad$obs$cs_name,
+#'   "chr[0-9]+_([^_]+_[0-9]+|ENSG[0-9]+)"
+#' )[,2]
+#'
 #' # Generate coloc input table
 #' coloc_guide_table <- anndata2coloc_input(chr22_molQTL_ad)
-#' 
+#'
 #' # Save the table to a CSV file
 #' fwrite(coloc_guide_table, file = "/path/to/coloc_guide_table.csv")
 #' }

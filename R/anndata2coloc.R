@@ -4,7 +4,7 @@
 #' the sparse matrix with its transpose to identify shared elements, retrieves trait information,
 #' and performs colocalization testing on the identified pairs.
 #'
-#' @param ad An AnnData object containing genetic data.
+#' @param ad_or_sce An AnnData or SingleCellExperiment object containing genetic data.
 #' @param coloc_input a path to a file with schema of pairwises test to run
 #'
 #' @return A list of colocalization results for each pair of traits.

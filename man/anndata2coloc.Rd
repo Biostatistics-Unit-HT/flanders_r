@@ -7,9 +7,9 @@
 anndata2coloc(ad_or_sce, coloc_input)
 }
 \arguments{
-\item{coloc_input}{a path to a file with schema of pairwises test to run}
+\item{ad_or_sce}{An AnnData or SingleCellExperiment object containing genetic data.}
 
-\item{ad}{An AnnData object containing genetic data.}
+\item{coloc_input}{a path to a file with schema of pairwises test to run}
 }
 \value{
 A list of colocalization results for each pair of traits.

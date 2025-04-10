@@ -9,8 +9,6 @@ anndata2coloc_input(ad_or_sce)
 \arguments{
 \item{ad_or_sce}{An AnnData or SingleCellExperiment object containing 
 credible sets data. The `obs` metadata should include a `cs_name` field.}
-
-\item{ad}{An AnnData object containing genetic data.}
 }
 \value{
 A data.frame with colnames of t2, t1, t1_study_id,t1_phenotype_id,
@@ -44,12 +42,19 @@ downstream coloc analysis.
 }
 \examples{
 \dontrun{
+library(anndata)
+library(data.table)
+library(dplyr)
+
 # Load AnnData object
 chr22_molQTL_ad <- read_h5ad("/path/to/HUVEC_chr22_combined_credible_sets.h5ad")
 
 # Extract study and phenotype IDs
 chr22_molQTL_ad$obs$study_id <- str_extract(chr22_molQTL_ad$obs$cs_name, "^[A-Za-z]+_chr[0-9]+")
-chr22_molQTL_ad$obs$phenotype_id <- str_match(chr22_molQTL_ad$obs$cs_name, "chr[0-9]+_([^_]+_[0-9]+|ENSG[0-9]+)")[,2]
+chr22_molQTL_ad$obs$phenotype_id <- str_match(
+  chr22_molQTL_ad$obs$cs_name,
+  "chr[0-9]+_([^_]+_[0-9]+|ENSG[0-9]+)"
+)[,2]
 
 # Generate coloc input table
 coloc_guide_table <- anndata2coloc_input(chr22_molQTL_ad)
