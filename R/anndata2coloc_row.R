@@ -115,13 +115,13 @@ anndata2coloc_row <- function(coloc_combo_row, ad_by_chr) {
   t1_label <- ifelse(
     is.na(coloc_combo_row$t1_phenotype_id),
     coloc_combo_row$t1_study_id,
-    paste0(coloc_combo_row$t1_study_id, "_", coloc_combo_row$t1_phenotype_id)
+    coloc_combo_row$t1_phenotype_id
   )
   
   t2_label <- ifelse(
     is.na(coloc_combo_row$t2_phenotype_id),
     coloc_combo_row$t2_study_id,
-    paste0(coloc_combo_row$t2_study_id, "_", coloc_combo_row$t2_phenotype_id)
+    coloc_combo_row$t2_phenotype_id
   )
   
   cojo_snp1 <- gsub(paste0(t1_label, "_(.*)_locus_.*_finemap.rds"), "\\1", coloc_combo_row$t1)
