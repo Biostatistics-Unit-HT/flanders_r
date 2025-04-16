@@ -13,7 +13,7 @@ When processing small to moderate datasets, you can run colocalization tests on 
 ## Table of Contents
 
 1. [Installation](#installation)  
-   1. [Simple Installation (via CRAN)](#simple-installation-via-cran)  
+   1. [Simple Installation](#simple-installation)  
    2. [Installation via Conda Environment](#installation-via-conda-environment)
 2. [Quick Start](#quick-start)  
    1. [Scenario 1: Starting with an existing AnnData](#scenario-1-starting-with-an-existing-anndata)  
@@ -26,9 +26,9 @@ When processing small to moderate datasets, you can run colocalization tests on 
 
 ## Installation
 
-### Simple Installation (via CRAN)
+### Simple Installation
 
-To install the required R packages from CRAN, you can run the following commands in your R session:
+To install the required R packages from CRAN, BioConductor and github, you can run the following commands in your R session:
 
 ```r
 install.packages("data.table")
@@ -36,7 +36,7 @@ install.packages("dplyr")
 install.packages("Matrix")
 install.packages("optparse")
 
-# You might also need these Bioconductor packages:
+# You need these Bioconductor packages:
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("SingleCellExperiment")
@@ -44,8 +44,9 @@ BiocManager::install("zellkonverter")
 BiocManager::install("scrnaseq")
 
 # Install the flanders package
-# You might need the devtools package if not installed.
+# You need the devtools package if not installed.
 install.packages("devtools")
+devtools::install_github("anndata/anndataR")
 devtools::install_github("Biostatistics-Unit-HT/flanders")
 ```
 This guide installs all dependencies from CRAN and Bioconductor for a straightforward R-based setup.
@@ -66,6 +67,11 @@ mamba create -p <your_folder_with_conda_envs>/flanders_r \
   r-anndata=0.7.5.6 \
   r-matrix=1.7_3 \
   r-optparse=1.7.5
+
+conda activate <your_folder_with_conda_envs>/flanders_r
+git clone git@github.com:Biostatistics-Unit-HT/flanders_r.git
+install.packages("flanders_r", repos = NULL, type = "source")
+
 ```
 
 ---
