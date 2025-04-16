@@ -4,10 +4,10 @@
 \alias{anndata2coloc}
 \title{Perform Colocalization Analysis on AnnData Object}
 \usage{
-anndata2coloc(ad, coloc_input)
+anndata2coloc(ad_or_sce, coloc_input)
 }
 \arguments{
-\item{ad}{An AnnData object containing genetic data.}
+\item{ad_or_sce}{An AnnData or SingleCellExperiment object containing genetic data.}
 
 \item{coloc_input}{a path to a file with schema of pairwises test to run}
 }

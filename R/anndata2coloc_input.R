@@ -5,7 +5,7 @@
 #' identify shared elements, retrieves trait information,#' and performs
 #' colocalization testing on the identified pairs.
 #'
-#' @param ad An AnnData object containing genetic data.
+#' @param ad_or_sce An AnnData or SingleCellExperiment object containing genetic data.
 #'
 #' @return A data.frame with colnames of t2, t1, t1_study_id,t1_phenotype_id,
 #' t1_top_pvalue, t2_study_id, t2_phenotype_id, t2_top_pvalue. Each row
@@ -19,62 +19,112 @@
 #' @import anndata
 #' @import coloc
 #' @import Matrix
+#' @import zellkonverter
+#' @import SingleCellExperiment
+#' @import scRNAseq
 #'
+#' @title Convert AnnData or SingleCellExperiment to Coloc Input
+#' 
+#' @description This script demonstrates how to process credible sets data 
+#' stored in an AnnData or SingleCellExperiment object to generate input for 
+#' coloc analysis. It extracts relevant metadata, such as study IDs and 
+#' phenotype IDs, and formats the data into a table suitable for coloc.
+#' 
+#' @details 
+#' The script assumes that the input data is stored in an AnnData object 
+#' (e.g., `.h5ad` file) or a SingleCellExperiment object. It extracts the 
+#' `study_id` and `phenotype_id` from the `cs_name` field in the `obs` 
+#' (observations) metadata. The resulting table is saved as a CSV file for 
+#' downstream coloc analysis.
+#' 
+#' @param ad_or_sce An AnnData or SingleCellExperiment object containing 
+#' credible sets data. The `obs` metadata should include a `cs_name` field.
+#' 
+#' @return A data frame formatted for coloc analysis, saved as a CSV file.
+#' 
 #' @examples
 #' \dontrun{
 #' library(anndata)
 #' library(data.table)
 #' library(dplyr)
 #'
-#' chr22_molQTL_ad <- read_h5ad("/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData/HUVEC_chr22_combined_credible_sets.h5ad")
+#' # Load AnnData object
+#' chr22_molQTL_ad <- read_h5ad("/path/to/HUVEC_chr22_combined_credible_sets.h5ad")
 #'
+#' # Extract study and phenotype IDs
 #' chr22_molQTL_ad$obs$study_id <- str_extract(chr22_molQTL_ad$obs$cs_name, "^[A-Za-z]+_chr[0-9]+")
+#' chr22_molQTL_ad$obs$phenotype_id <- str_match(
+#'   chr22_molQTL_ad$obs$cs_name,
+#'   "chr[0-9]+_([^_]+_[0-9]+|ENSG[0-9]+)"
+#' )[,2]
 #'
-#' chr22_molQTL_ad$obs$phenotype_id <- str_match(chr22_molQTL_ad$obs$cs_name, "chr[0-9]+_([^_]+_[0-9]+|ENSG[0-9]+)")[,2]
-#'
+#' # Generate coloc input table
 #' coloc_guide_table <- anndata2coloc_input(chr22_molQTL_ad)
 #'
-#' fwrite(coloc_guide_table,file = "/Users/sodbo.sharapov/OneDrive - Htechnopole/00_Sodbo_Projects/anndata/data/coloc_duie_table.csv")
-#'}
-#'
-anndata2coloc_input <- function(ad) {
+#' # Save the table to a CSV file
+#' fwrite(coloc_guide_table, file = "/path/to/coloc_guide_table.csv")
+#' }
+#' 
+#' @seealso 
+#' \code{\link[anndata]{read_h5ad}} for reading AnnData files.
+#' \code{\link[data.table]{fwrite}} for writing data to CSV files.
 
-  matrix_product <- ad$X %*% Matrix::t(ad$X)
+anndata2coloc_input <- function(ad_or_sce) {
+  is_sce <- inherits(ad_or_sce, "SingleCellExperiment")
 
-  # Set the diagonal to zero (as each vector will have 1s on diagonal)
+  if (is_sce) {
+    # ---- Case: SCE object from zellkonverter ----
+    message("Processing SingleCellExperiment object...")
+
+    X <- as(Matrix::t(assay(ad_or_sce, "X")), "dgCMatrix")
+    cs_names <- rownames(colData(ad_or_sce))
+    obs_df <- as.data.frame(colData(ad_or_sce))
+  } else {
+    # ---- Case: AnnData object from reticulate ----
+    message("Processing AnnData object from Python...")
+
+    X <- ad_or_sce$X
+    cs_names <- rownames(ad_or_sce$obs)
+    obs_df <- as.data.frame(ad_or_sce$obs)
+  }
+
+  # Matrix multiplication to detect shared SNPs
+  matrix_product <- X %*% Matrix::t(X)
   diag(matrix_product) <- 0
 
+  # Find non-zero overlaps (shared SNPs)
   shared_elements <- which(matrix_product > 0, arr.ind = TRUE)
   shared_elements_df <- as.data.frame(shared_elements)
+  shared_elements_df$row <- cs_names[shared_elements_df$row]
+  shared_elements_df$col <- cs_names[shared_elements_df$col]
 
-  # Map row and column indices to credible set names
-  shared_elements_df$row <- rownames(shared_elements)
-  shared_elements_df$col <- colnames(matrix_product)[shared_elements_df$col]
-
-  # Keep unique pairs
-  shared_elements_unique <- unique(t(apply(shared_elements_df, 1, sort)))
+  # Get unique and sorted credible set pairs
+  shared_elements_unique <- unique(t(apply(shared_elements_df[, c("row", "col")], 1, sort)))
   colnames(shared_elements_unique) <- c("t1", "t2")
   rownames(shared_elements_unique) <- NULL
 
-  # Retrieve trait info
+  # Merge trait info
   coloc_combo <- merge(
     shared_elements_unique,
-    ad$obs %>% select(-any_of("panel")),
+    obs_df %>% dplyr::select(-any_of("panel")),
     by.x = "t1",
     by.y = "cs_name"
   )
 
   coloc_combo <- merge(
     coloc_combo,
-    ad$obs %>% select(-any_of("panel")),
+    obs_df %>% dplyr::select(-any_of("panel")),
     by.x = "t2",
     by.y = "cs_name",
     suffixes = c("_t1", "_t2")
   )
 
-  # Remove pair testing different conditional dataset for the same trait (study_id + phenotype_id)
+  # Remove same study_id and phenotype_id duplicates
   coloc_combo <- coloc_combo %>%
-    dplyr::filter(study_id_t1 != study_id_t2 | (study_id_t1 == study_id_t2 & phenotype_id_t1 != phenotype_id_t2)) %>%
+    dplyr::filter(
+      study_id_t1 != study_id_t2 |
+        (study_id_t1 == study_id_t2 & phenotype_id_t1 != phenotype_id_t2)
+    ) %>%
     dplyr::select(-chr_t2, -contains("start"), -contains("end"))
 
   coloc_combo <- coloc_combo %>%
@@ -86,6 +136,7 @@ anndata2coloc_input <- function(ad) {
       chr
     )
 
+  # Rename columns based on available info
   if (ncol(coloc_combo) == 9) {
     colnames(coloc_combo) <- c(
       "t2", "t1",
@@ -106,4 +157,3 @@ anndata2coloc_input <- function(ad) {
 
   return(coloc_combo)
 }
-

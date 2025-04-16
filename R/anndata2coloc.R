@@ -4,7 +4,7 @@
 #' the sparse matrix with its transpose to identify shared elements, retrieves trait information,
 #' and performs colocalization testing on the identified pairs.
 #'
-#' @param ad An AnnData object containing genetic data.
+#' @param ad_or_sce An AnnData or SingleCellExperiment object containing genetic data.
 #' @param coloc_input a path to a file with schema of pairwises test to run
 #'
 #' @return A list of colocalization results for each pair of traits.
@@ -29,27 +29,46 @@
 #'
 #'}
 #'
-anndata2coloc <- function(ad, coloc_input) {
-
-  list_of_chr <- unique(ad$obs[coloc_input$t1,"chr"])
-
-  print(paste("There are",list_of_chr))
-
-  ad_by_chr <- lapply(list_of_chr,function(chr) {ad[ad$obs$chr == chr, ad$var$chr == chr]})
-
+anndata2coloc <- function(ad_or_sce, coloc_input) {
+  is_sce <- inherits(ad_or_sce, "SingleCellExperiment")
+  
+  # Extract chromosome information:
+  # For SCE: credible set info is in colData,
+  # and the credible set names are in the rownames of colData (which should equal colnames(ad_or_sce)).
+  # For AnnData (reticulate): assume the same structure in ad_or_sce$obs.
+  obs_chr    <- if (is_sce) colData(ad_or_sce)$chr else ad_or_sce$obs$chr
+  obs_csname <- if (is_sce) rownames(colData(ad_or_sce)) else rownames(ad_or_sce$obs)
+  
+  # Determine which chromosomes the input credible sets (coloc_input$t1) belong to
+  coloc_chr  <- obs_chr[match(coloc_input$t1, obs_csname)]
+  list_of_chr <- unique(coloc_chr)
+  
+  message("There are ", length(list_of_chr), " chromosomes: ", paste(list_of_chr, collapse = ", "))
+  
+  # Subset the object by chromosome.
+  # For SCE: rows = SNPs (from rowData, also rownames(ad_or_sce)) and columns = credible sets (from colData, also colnames(ad_or_sce))
+  ad_by_chr <- lapply(list_of_chr, function(chr) {
+    if (is_sce) {
+      snp_rows  <- which(rowData(ad_or_sce)$chr == chr)   # SNPs (features)
+      cred_cols <- which(colData(ad_or_sce)$chr == chr)     # Credible sets (cells)
+      ad_or_sce[snp_rows, cred_cols]
+    } else {
+      ad_or_sce[ad_or_sce$obs$chr == chr, ad_or_sce$var$chr == chr]
+    }
+  })
   names(ad_by_chr) <- as.character(list_of_chr)
-
-  ###### COLOCALIZATION ######
-
-  # Split the dataframe into a list of rows
-  coloc_combo_ls <- split(coloc_input, seq(nrow(coloc_input)))
-
-  # Perform coloc!
-  coloc.full <- lapply(coloc_combo_ls, anndata2coloc_row,ad_by_chr = ad_by_chr, ad = ad)
-
-# Store ALL the summary output in a data frame, adding tested traits column and SAVE
-  only_summary_df <- as.data.frame(rbindlist(lapply(coloc.full, function(x) { x$summary })))
-
-  return(only_summary_df)
-
+  
+  # Split coloc_input into one-row pieces
+  coloc_combo_ls <- split(coloc_input, seq_len(nrow(coloc_input)))
+  
+  # For each input row, perform colocalization analysis
+  coloc.full <- lapply(coloc_combo_ls, anndata2coloc_row, ad_by_chr = ad_by_chr)
+  
+  # Combine the individual summaries into one data.frame
+  only_summary_df <- data.table::rbindlist(
+    lapply(coloc.full, function(x) x$summary),
+    fill = TRUE
+  )
+  
+  return(as.data.frame(only_summary_df))
 }

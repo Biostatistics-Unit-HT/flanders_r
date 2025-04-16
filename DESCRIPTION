@@ -1,19 +1,23 @@
-Package: pleisol
+Package: flanders
 Type: Package
-Title: Pleiotropy Solver
-Version: 0.5.3
+Title: Finemapping coLocalization AND plEiotRopy Solver
+Version: 0.6.1
 Author: Sodbo Sharapov, Arianna Landini, Nicola Pirastu
 Maintainer: Sodbo Sharapov <sodbo.sharapov@fht.org>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: A tool for fine-mapping, colocalization, and pleiotropy analysis
+  in genetic studies. It integrates multiple datasets to identify shared
+  genetic signals and provides statistical insights.
 Imports: 
-  coloc,
-  susieR,
   Matrix,
+  SingleCellExperiment,
   anndata,
+  coloc,
   data.table,
   dplyr,
-  stats
+  scRNAseq,
+  zellkonverter
+ImportFrom: 
+  stats, setNames
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
