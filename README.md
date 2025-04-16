@@ -13,6 +13,8 @@ When processing small to moderate datasets, you can run colocalization tests on 
 ## Table of Contents
 
 1. [Installation](#installation)  
+   1. [Simple Installation (via CRAN)](#simple-installation-via-cran)  
+   2. [Installation via Conda Environment](#installation-via-conda-environment)
 2. [Quick Start](#quick-start)  
    1. [Scenario 1: Starting with an existing AnnData](#scenario-1-starting-with-an-existing-anndata)  
    2. [Scenario 2: Starting with nf-flanders Finemapping Output](#scenario-2-starting-with-nf-flanders-finemapping-output)   
@@ -24,10 +26,32 @@ When processing small to moderate datasets, you can run colocalization tests on 
 
 ## Installation
 
-Below are the steps to set up a conda environment with the required dependencies:
+### Simple Installation (via CRAN)
 
+To install the required R packages from CRAN, you can run the following commands in your R session:
 
-**For Linux/Windows:**
+```r
+install.packages("data.table")
+install.packages("dplyr")
+install.packages("Matrix")
+install.packages("optparse")
+
+# You might also need these Bioconductor packages:
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install("SingleCellExperiment")
+BiocManager::install("zellkonverter")
+BiocManager::install("scrnaseq")
+
+# Install the flanders package
+# You might need the devtools package if not installed.
+install.packages("devtools")
+devtools::install_github("Biostatistics-Unit-HT/flanders")
+```
+This guide installs all dependencies from CRAN and Bioconductor for a straightforward R-based setup.
+### Installation via Conda Environment
+
+For a more reproducible environment or if you need to interface with Python’s AnnData via reticulate, you can set up a Conda environment as follows:
 ```bash
 mamba create -p <your_folder_with_conda_envs>/flanders_r \
   -c conda-forge -c bioconda -c R \
