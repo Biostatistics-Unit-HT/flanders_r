@@ -14,8 +14,8 @@ When processing small to moderate datasets, you can run colocalization tests on 
 
 1. [Installation](#installation)  
 2. [Quick Start](#quick-start)  
-   1. [Scenario 1: Starting with nf-flanders Finemapping Output](#scenario-1-starting-with-nf-flanders-finemapping-output)  
-   2. [Scenario 2: Starting with an existing AnnData Object](#scenario-2-starting-with-an-existing-anndata-object)  
+   1. [Scenario 1: Starting with an existing AnnData Object](#scenario-1-starting-with-an-existing-anndata-object)  
+   2. [Scenario 2: Starting with nf-flanders Finemapping Output](#scenario-2-starting-with-nf-flanders-finemapping-output)   
 3. [Function Reference](#function-reference)  
 4. [Additional Resources](#additional-resources)  
 5. [Acknowledgments](#acknowledgments)
@@ -48,7 +48,17 @@ mamba create -p <your_folder_with_conda_envs>/flanders_r \
 
 ## Quick Start
 
-### Scenario 1: Starting with nf-flanders Finemapping Output
+### Scenario 1: Starting with an existing AnnData Object
+
+If you already have an AnnData object:
+```r
+   sce <- readH5AD("/path/to/output/my_anndata.h5ad",reader="R")
+   coloc_input <- anndata2coloc_input(sce)
+   coloc_results <- anndata2coloc(sce, coloc_input)
+   print(coloc_results)
+```
+
+### Scenario 2: Starting with nf-flanders Finemapping Output
 
 If you do not have an AnnData object yet:
 
@@ -94,16 +104,6 @@ If you do not have an AnnData object yet:
     coloc_results <- anndata2coloc(sce, coloc_input)
     print(coloc_results)
    ```
-
-### Scenario 2: Starting with an existing AnnData Object
-
-If you already have an AnnData object:
-```r
-   sce <- readH5AD("/path/to/output/my_anndata.h5ad",reader="R")
-   coloc_input <- anndata2coloc_input(sce)
-   coloc_results <- anndata2coloc(sce, coloc_input)
-   print(coloc_results)
-```
 ---
 
 ## Function Reference
