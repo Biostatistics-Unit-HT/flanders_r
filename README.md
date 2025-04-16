@@ -1,6 +1,6 @@
 # pleisol
 
-**pleisol** is an R package designed to seamlessly convert finemapping output files (e.g., from the nf-flanders pipeline) into a unified AnnData object and facilitate colocalization analysis. The package provides functions to:
+**pleisol** is an R package designed to seamlessly convert finemapping output files (e.g., from the [nf-flanders](https://github.com/Biostatistics-Unit-HT/Flanders) pipeline) into a unified AnnData object and facilitate colocalization analysis. The package provides functions to:
 
 - Convert multiple  `*finemap.rds` files into a single AnnData object with credible set metadata.
 - Generate an input table (`coloc_input`) for colocalization testing.
@@ -15,7 +15,7 @@ When processing small to moderate datasets, you can run colocalization tests on 
 1. [Installation](#installation)  
 2. [Quick Start](#quick-start)  
    1. [Scenario 1: Starting with nf-flanders Finemapping Output](#scenario-1-starting-with-nf-flanders-finemapping-output)  
-   2. [Scenario 2: Starting with an Existing AnnData Object](#scenario-2-starting-with-an-existing-anndata-object)  
+   2. [Scenario 2: Starting with an existing AnnData Object](#scenario-2-starting-with-an-existing-anndata-object)  
 3. [Function Reference](#function-reference)  
 4. [Additional Resources](#additional-resources)  
 5. [Acknowledgments](#acknowledgments)
@@ -60,12 +60,18 @@ If you do not have an AnnData object yet:
     library(dplyr)
     
     finemap_folder <- "/path/to/finemap/results/"
-    finemap_chr22_files <- list.files(finemap_folder, pattern = "chr22.*\\.rds", full.names = TRUE)
-    finemap_chr22_files <- finemap_chr22_files[!grepl("GWAS", finemap_chr22_files)]
+    finemap_files <- list.files(finemap_folder, pattern = "*\\.rds", full.names = TRUE)
+
+    # create a vector of phenotype ids. Each element corresponds to each file of finemap_files.
+    # phenotype_id <-
+
+    # create a vector of study ids. Each element corresponds to each file of finemap_files.
+    # study_id <- 
     
     ad <- finemap2anndata(
-      finemap_files = finemap_chr22_files,
-      panel = "HRC"
+      finemap_files = finemap_files,
+      phenotype_id = phenotype_id,
+      study_id = study_id
     )
     
     # Optionally write the AnnData object to disk
@@ -75,7 +81,7 @@ If you do not have an AnnData object yet:
 3. **Generate Coloc Input Table. Write it if you want further run the nf-hcoloc pipeline**
 ```r
     coloc_input <- anndata2coloc_input(ad)
-    data.table::fwrite(coloc_input, file = "/path/to/coloc_guide_table.csv")
+    fwrite(coloc_input, file = "/path/to/coloc_guide_table.csv")
 ```
 
 4. **Perform Colocalization Analysis**
@@ -85,7 +91,7 @@ If you do not have an AnnData object yet:
     print(coloc_results)
    ```
 
-### Scenario 2: Starting with an Existing AnnData Object
+### Scenario 2: Starting with an existing AnnData Object
 
 If you already have an AnnData object:
 ```r
@@ -116,4 +122,4 @@ If the runtime for your colocalization tests becomes large, use the [flanders_nf
 
 ## Acknowledgments
 
-Contributions, bug reports, and feature requests are welcome. Contact the Biostatistics Unit at [Your Institution or Contact Info] for more details.
+Contributions, bug reports, and feature requests are welcome. Open an issue in case of [issue](https://github.com/Biostatistics-Unit-HT/flanders_r/issues), bug or feature request.
