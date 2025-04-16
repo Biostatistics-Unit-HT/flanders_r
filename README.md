@@ -80,14 +80,18 @@ If you do not have an AnnData object yet:
 
 3. **Generate Coloc Input Table. Write it if you want further run the nf-hcoloc pipeline**
 ```r
-    coloc_input <- anndata2coloc_input(ad)
-    fwrite(coloc_input, file = "/path/to/coloc_guide_table.csv")
+   library(zellkonverter)
+   library(SingleCellExperiment)
+   library(scRNAseq)
+   sce <- readH5AD("/path/to/output/my_anndata.h5ad",reader="R")
+   coloc_input <- anndata2coloc_input(sce)
+   fwrite(coloc_input, file = "/path/to/coloc_guide_table.csv")
 ```
 
 4. **Perform Colocalization Analysis**
    ```r
 
-    coloc_results <- anndata2coloc(ad, coloc_input)
+    coloc_results <- anndata2coloc(sce, coloc_input)
     print(coloc_results)
    ```
 
@@ -95,9 +99,9 @@ If you do not have an AnnData object yet:
 
 If you already have an AnnData object:
 ```r
-   ad <- read_h5ad("/path/to/output/my_anndata.h5ad")
-   coloc_input <- anndata2coloc_input(ad)
-   coloc_results <- anndata2coloc(ad, coloc_input)
+   sce <- readH5AD("/path/to/output/my_anndata.h5ad",reader="R")
+   coloc_input <- anndata2coloc_input(sce)
+   coloc_results <- anndata2coloc(sce, coloc_input)
    print(coloc_results)
 ```
 ---
