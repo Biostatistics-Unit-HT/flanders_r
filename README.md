@@ -14,7 +14,7 @@ When processing small to moderate datasets, you can run colocalization tests on 
 
 1. [Installation](#installation)  
 2. [Quick Start](#quick-start)  
-   1. [Scenario 1: Starting with an existing AnnData Object](#scenario-1-starting-with-an-existing-anndata-object)  
+   1. [Scenario 1: Starting with an existing AnnData](#scenario-1-starting-with-an-existing-anndata)  
    2. [Scenario 2: Starting with nf-flanders Finemapping Output](#scenario-2-starting-with-nf-flanders-finemapping-output)   
 3. [Function Reference](#function-reference)  
 4. [Additional Resources](#additional-resources)  
@@ -48,11 +48,30 @@ mamba create -p <your_folder_with_conda_envs>/flanders_r \
 
 ## Quick Start
 
-### Scenario 1: Starting with an existing AnnData Object
+### Scenario 1: Starting with an existing AnnData
 
-If you already have an AnnData object:
+If you already have an AnnData:
 ```r
    sce <- readH5AD("/path/to/output/my_anndata.h5ad",reader="R")
+   coloc_input <- anndata2coloc_input(sce)
+   coloc_results <- anndata2coloc(sce, coloc_input)
+   print(coloc_results)
+```
+
+If you already have multiple AnnDatas:
+```r
+   list_of_ads <- list("/path/to/ad1.h5ad","/path/to/output/ad2.h5ad")
+   list_of_ads <- lapply(list_of_ads,read_h5ad)
+
+   merged_ad <- concat(
+     list_of_ads,
+     join="outer",
+     merge="first"
+   )
+   merged_ad <- fix_ad_var(merged_ad)
+   write_h5ad(merged_ad,"/path/to/merged_ad.h5ad")
+
+   sce <- readH5AD("/path/to/merged_ad.h5ad",reader="R")
    coloc_input <- anndata2coloc_input(sce)
    coloc_results <- anndata2coloc(sce, coloc_input)
    print(coloc_results)
