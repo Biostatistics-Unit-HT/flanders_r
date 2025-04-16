@@ -1,114 +1,124 @@
 # pleisol
 
-```r
+**pleisol** is an R package designed to seamlessly convert finemapping output files (e.g., from the nf-flanders pipeline) into a unified AnnData object and facilitate colocalization analysis. The package provides functions to:
 
-## Create conda environment with mamba
+- Convert multiple  `*finemap.rds` files into a single AnnData object with credible set metadata.
+- Generate an input table (`coloc_input`) for colocalization testing.
+- Run pairwise colocalization tests, with minimal runtime overhead (typically 5–10 tests per second on standard hardware).
 
-mamba create -p <your_folder_with_conda_envs>/pleisol -c conda-forge -c bioconda -c R \
-r-base=4.3 r-susier=0.12.35 r-coloc=5.2.3 r-data.table=1.15.4 r-dplyr=1.1.4 r-anndata=0.7.5.6 r-mixsqp=0.3_54
+When processing small to moderate datasets, you can run colocalization tests on your PC or laptop. For large-scale analyses, consider using the [flanders_nf_coloc](https://github.com/Biostatistics-Unit-HT/flanders_nf_coloc) Nextflow pipeline.
+
+---
+
+## Table of Contents
+
+1. [Installation](#installation)  
+2. [Quick Start](#quick-start)  
+   1. [Scenario 1: Starting with nf-flanders Finemapping Output](#scenario-1-starting-with-nf-flanders-finemapping-output)  
+   2. [Scenario 2: Starting with an Existing AnnData Object](#scenario-2-starting-with-an-existing-anndata-object)  
+3. [Function Reference](#function-reference)  
+4. [Additional Resources](#additional-resources)  
+5. [Acknowledgments](#acknowledgments)
+
+---
+
+## Installation
+
+Below are the steps to set up a conda environment with the required dependencies:
 
 
-For MacOS arm:
-mamba create -p your_folder_with_conda_envs>/pleisol -c dnachun -c conda-forge -c bioconda -c R \
-r-base=4.3 r-susier=0.12.35 r-coloc=5.2.3 r-data.table=1.15.4 r-dplyr=1.1.4 r-anndata=0.7.5.6 r-mixsqp=0.3_54
-
-After creation of conda env, you should additionally install matrix package from 
-https://cran.r-project.org/src/contrib/Archive/Matrix/Matrix_1.5-4.tar.gz
-
-reticulate::use_virtualenv("~/rstudio/virtualenvs/r-reticulate", required = TRUE)
-
-anndata <- reticulate::import("anndata")
-
-library(pleisol)
-library(data.table)
-library(dplyr)
-
-# Define the folder containing the finemap files
-finemap_folder <- "/group/pirastu/prj_014_huvec_coloc/2024_04_huvec_hcoloc_analysis_V2/results/finemap/"
-
-# List all chr22 finemap files and filter out GWAS files
-finemap_chr22_files <- list.files(finemap_folder, pattern = "chr22.*\\.rds", full.names = TRUE)
-finemap_chr22_files <- finemap_chr22_files[!grepl("GWAS", finemap_chr22_files)]
-
-# List all GWAS finemap files
-finemap_gwas_files <- list.files(finemap_folder, pattern = "GWAS.*\\.rds", full.names = TRUE)
-
-# Convert GWAS finemap files to AnnData format
-gwas_ad <- finemap2anndata(
-  finemap_files = finemap_gwas_files,
-  output_file = "/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData/HUVEC_GWAS_combined_credible_sets.h5ad",
-  panel = "HRC"
-)
-
-# Convert chr22 molecular QTL finemap files to AnnData format
-chr22_molQTL_ad <- finemap2anndata(
-  finemap_files = finemap_chr22_files,
-  output_file = "/group/pirastu/prj_013_horizontal_codec/2024_06_20_AnnData/HUVEC_chr22_combined_credible_sets.h5ad",
-  panel = "HRC"
-)
-
-library(stringr)
-
-chr22_molQTL_ad$obs$study_id <- str_extract(chr22_molQTL_ad$obs$cs_name, "^[A-Za-z]+_chr[0-9]+")
-
-chr22_molQTL_ad$obs$phenotype_id <- str_match(chr22_molQTL_ad$obs$cs_name, "chr[0-9]+_([^_]+_[0-9]+|ENSG[0-9]+)")[,2]
-
-# Perform colocalization analysis on the GWAS AnnData object
-gwas_ad.coloc <- anndata2coloc(gwas_ad)
-
-# View summary of colocalization results
-print(gwas_ad.coloc$summary)
-
-# View detailed results by SNP
-print(gwas_ad.coloc$results)
+**For Linux/Windows:**
+```bash
+mamba create -p <your_folder_with_conda_envs>/flanders_r \
+  -c conda-forge -c bioconda -c R \
+  r-base=4.4 \
+  bioconductor-singlecellexperiment=1.28.0 \
+  bioconductor-zellkonverter=1.16.0 \
+  bioconductor-scrnaseq=2.20.0 \
+  r-susier=0.12.35 \
+  r-coloc=5.2.3 \
+  r-data.table=1.17.0 \
+  r-dplyr=1.1.4 \
+  r-anndata=0.7.5.6 \
+  r-matrix=1.7_3 \
+  r-optparse=1.7.5
 ```
 
-## Data Column Specifications
+---
 
-### var (Variables)
+## Quick Start
 
-| Column Name | Format / Content           | Description                                                                                                                                                         |
-| ----------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `snp`       | `chr{num}:{pos}:EA:RA`    | **chr{num}**: chromosome identifier (any string)<br>**pos**: SNP position (in bp)<br>**EA**: effective allele (linked to beta)<br>**RA**: reference allele           |
-| `chr`       | String (e.g. `"chr{num}"`)  | Chromosome where the SNP is located. Usually `"chr{num}"` format, but can be any string.                                                                            |
-| `pos`       | Numeric (bp)               | Position of the SNP in base pairs (bp) on the physical map of the genome.                                                                                           |
+### Scenario 1: Starting with nf-flanders Finemapping Output
 
-**Note:** The row names of `ad$var` should be exactly equal to the values in `ad$var$snp`.
+If you do not have an AnnData object yet:
+
+1. **Convert Finemapping Files to AnnData**
+```r
+
+    library(pleisol)
+    library(data.table)
+    library(dplyr)
+    
+    finemap_folder <- "/path/to/finemap/results/"
+    finemap_chr22_files <- list.files(finemap_folder, pattern = "chr22.*\\.rds", full.names = TRUE)
+    finemap_chr22_files <- finemap_chr22_files[!grepl("GWAS", finemap_chr22_files)]
+    
+    ad <- finemap2anndata(
+      finemap_files = finemap_chr22_files,
+      panel = "HRC"
+    )
+    
+    # Optionally write the AnnData object to disk
+    ad$write_h5ad("/path/to/output/credible_sets.h5ad")
+```
+
+3. **Generate Coloc Input Table**
+```r
+    library(stringr)
+    
+    ad$obs$study_id <- str_extract(ad$obs$cs_name, "^[A-Za-z]+_chr[0-9]+")
+    ad$obs$phenotype_id <- str_match(ad$obs$cs_name, "chr[0-9]+_([^_]+_[0-9]+|ENSG[0-9]+)")[,2]
+    
+    coloc_input <- anndata2coloc_input(ad)
+    data.table::fwrite(coloc_input, file = "/path/to/coloc_guide_table.csv")
+```
+
+4. **Perform Colocalization Analysis**
+   ```r
+
+    coloc_results <- anndata2coloc(ad, coloc_input)
+    print(coloc_results)
+   ```
+
+### Scenario 2: Starting with an Existing AnnData Object
+
+If you already have an AnnData object:
+```r
+    coloc_input <- anndata2coloc_input(existing_anndata)
+    coloc_results <- anndata2coloc(existing_anndata, coloc_input)
+    print(coloc_results)
+```
+---
+
+## Function Reference
+
+- **finemap2anndata**  
+  Converts a set of finemapping `.rds` files into a single AnnData object with credible set metadata.
+
+- **anndata2coloc_input**  
+  Generates a data frame specifying pairs of credible sets for colocalization tests.
+
+- **anndata2coloc**  
+  Performs colocalization tests using the provided AnnData object and trait-pair table.
 
 ---
 
-### obs (Observations)
+## Additional Resources
 
-#### Absolutely Necessary Columns
-
-| Column Name    | Format / Content                            | Description                                                                                                                                                                                                                         |
-| -------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cs_name`      | `chr{num}::{study_id}::{phenotype_id}::{snp}`   | **chr{num}**: chromosome (formatted as in `var`)<br>**study_id**: identifier for the study<br>**phenotype_id**: refers to the trait (equivalent to `phenotype_id`)<br>**snp**: SNP with the highest logABF within the credible set (formatted as in `ad$var$snp`).            |
-| `chr`          | String (e.g. `"chr{num}"`)                   | Chromosome where the credible set is located (same format as the `chr` field in `var`).                                                                                                                                             |
-| `start`        | Numeric (bp)                                | Start position (in bp) of the analyzed locus, representing the beginning of the locus used for fine mapping.                                                                                                                        |
-| `end`          | Numeric (bp)                                | End position (in bp) of the analyzed locus.                                                                                                                                                                                         |
-| `study_id`     | String                                      | Identifier for the study.                                                                                                                                                                                                           |
-| `phenotype_id` | String                                      | Identifier for the trait/phenotype analyzed within the corresponding study.                                                                                                                                                         |
-| `min_res_labf` | Numeric (log-scale)                         | Minimal value of logABF in the locus. If logABF for all SNPs is not available, approximate using:<br><br>``[logsum(logABF)/coverage] - log(N_snps - N_CS_SNPs)``<br><br>- **coverage**: requested coverage (usually 99% or 95%)<br>- 
-**logsum(logABF)**: log of the sum of ABF for SNPs in the credible set (using a log-sum to avoid overflow from extremely large values)<br>- Subtracting **log(N_snps - N_CS_SNPs)** gives the log(mean(ABF)) among SNPs outside the credible set. |
-| `panel`       | String             | Name of the imputation panel used.                                                                     |
-
-**Note:** The row names of `ad$obs` should be exactly equal to the values in `ad$obs$cs_name`.
+If the runtime for your colocalization tests becomes large, use the [flanders_nf_coloc](https://github.com/Biostatistics-Unit-HT/flanders_nf_coloc) Nextflow pipeline for scalable colocalization analysis.
 
 ---
 
-#### Highly Advised to Have
+## Acknowledgments
 
-| Column Name       | Format / Content     | Description                                                                                               |
-| ----------------- | -------------------- | --------------------------------------------------------------------------------------------------------- |
-| `min.abs.corr`    | Numeric              | Purity metric for the credible set: minimal absolute correlation between SNPs within the credible set.    |
-| `mean.abs.corr`   | Numeric              | Mean absolute correlation among SNPs within the credible set.                                             |
-| `median.abs.corr` | Numeric              | Median absolute correlation among SNPs within the credible set.                                           |
-
----
-
-#### Good to Have
-
-| Column Name   | Format / Content   | Description                                                                                            |
-| ------------- | ------------------ | ------------------------------------------------------------------------------------------------------ |
-| `top_pvalue`  | Numeric            | Lowest (either nominal or conditional) P-value of genetic association in the locus (useful for filtering). |
+Contributions, bug reports, and feature requests are welcome. Contact the Biostatistics Unit at [Your Institution or Contact Info] for more details.
