@@ -75,7 +75,7 @@ If you do not have an AnnData object yet:
     )
     
     # Optionally write the AnnData object to disk
-    ad$write_h5ad("/path/to/output/credible_sets.h5ad")
+    ad$write_h5ad("/path/to/output/my_anndata.h5ad")
 ```
 
 3. **Generate Coloc Input Table. Write it if you want further run the nf-hcoloc pipeline**
@@ -95,9 +95,10 @@ If you do not have an AnnData object yet:
 
 If you already have an AnnData object:
 ```r
-    coloc_input <- anndata2coloc_input(existing_anndata)
-    coloc_results <- anndata2coloc(existing_anndata, coloc_input)
-    print(coloc_results)
+   ad <- read_h5ad("/path/to/output/my_anndata.h5ad")
+   coloc_input <- anndata2coloc_input(ad)
+   coloc_results <- anndata2coloc(ad, coloc_input)
+   print(coloc_results)
 ```
 ---
 
