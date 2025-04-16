@@ -1,6 +1,6 @@
-# pleisol
+# flanders
 
-**pleisol** is an R package designed to seamlessly convert finemapping output files (e.g., from the [nf-flanders](https://github.com/Biostatistics-Unit-HT/Flanders) pipeline) into a unified AnnData object and facilitate colocalization analysis. The package provides functions to:
+**flanders** is an R package designed to seamlessly convert finemapping output files (e.g., from the [nf-flanders](https://github.com/Biostatistics-Unit-HT/Flanders) pipeline) into a unified AnnData object and facilitate colocalization analysis. The package provides functions to:
 
 - Convert multiple  `*finemap.rds` files into a single AnnData object with credible set metadata.
 - Generate an input table (`coloc_input`) for colocalization testing.
@@ -55,7 +55,7 @@ If you do not have an AnnData object yet:
 1. **Convert Finemapping Files to AnnData**
 ```r
 
-    library(pleisol)
+    library(flanders)
     library(data.table)
     library(dplyr)
     
