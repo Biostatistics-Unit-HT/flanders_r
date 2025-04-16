@@ -72,13 +72,8 @@ If you do not have an AnnData object yet:
     ad$write_h5ad("/path/to/output/credible_sets.h5ad")
 ```
 
-3. **Generate Coloc Input Table**
+3. **Generate Coloc Input Table. Write it if you want further run the nf-hcoloc pipeline**
 ```r
-    library(stringr)
-    
-    ad$obs$study_id <- str_extract(ad$obs$cs_name, "^[A-Za-z]+_chr[0-9]+")
-    ad$obs$phenotype_id <- str_match(ad$obs$cs_name, "chr[0-9]+_([^_]+_[0-9]+|ENSG[0-9]+)")[,2]
-    
     coloc_input <- anndata2coloc_input(ad)
     data.table::fwrite(coloc_input, file = "/path/to/coloc_guide_table.csv")
 ```
