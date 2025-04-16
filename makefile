@@ -1,5 +1,5 @@
 # Makefile for generating R packages.
-# 2011 Andrew Redd
+# 2011 Andrew Redd, 2024 Sodbo Sharapov
 #
 # Assumes Makefile is in a folder where package contents are in a subfolder pkg.
 # Roxygen uses the roxygen2 package, and will run automatically on check and all.
