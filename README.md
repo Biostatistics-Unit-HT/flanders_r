@@ -83,9 +83,14 @@ install.packages("flanders_r", repos = NULL, type = "source")
 
 If you already have an AnnData:
 ```r
+   library(zellkonverter)
+   library(SingleCellExperiment)
+   library(scRNAseq)
+
    sce <- readH5AD("/path/to/output/my_anndata.h5ad",reader="R")
    coloc_input <- anndata2coloc_input(sce)
    coloc_results <- anndata2coloc(sce, coloc_input)
+
    print(coloc_results)
 ```
 
@@ -101,6 +106,10 @@ If you already have multiple AnnDatas:
    )
    merged_ad <- fix_ad_var(merged_ad)
    write_h5ad(merged_ad,"/path/to/merged_ad.h5ad")
+
+   library(zellkonverter)
+   library(SingleCellExperiment)
+   library(scRNAseq)
 
    sce <- readH5AD("/path/to/merged_ad.h5ad",reader="R")
    coloc_input <- anndata2coloc_input(sce)
@@ -150,7 +159,6 @@ If you do not have an AnnData object yet:
 
 4. **Perform Colocalization Analysis**
    ```r
-
     coloc_results <- anndata2coloc(sce, coloc_input)
     print(coloc_results)
    ```
