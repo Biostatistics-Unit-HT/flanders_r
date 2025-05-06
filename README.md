@@ -18,9 +18,10 @@ When processing small to moderate datasets, you can run colocalization tests on 
 2. [Quick Start](#quick-start)  
    1. [Scenario 1: Starting with an existing AnnData](#scenario-1-starting-with-an-existing-anndata)  
    2. [Scenario 2: Starting with nf-flanders Finemapping Output](#scenario-2-starting-with-nf-flanders-finemapping-output)   
-3. [Function Reference](#function-reference)  
-4. [Additional Resources](#additional-resources)  
-5. [Acknowledgments](#acknowledgments)
+3. [Function Reference](#function-reference)
+4. [AnnData Column Specifications](#anndata-column-specifications)  
+5. [Additional Resources](#additional-resources)  
+6. [Acknowledgments](#acknowledgments)
 
 ---
 
