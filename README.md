@@ -168,6 +168,55 @@ If you do not have an AnnData object yet:
 
 ---
 
+## AnnData Column Specifications
+
+### var (Variables)
+
+| Column Name | Format / Content           | Description                                                                                                                                                         |
+| ----------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `snp`       | `chr{num}:{pos}:EA:RA`    | **chr{num}**: chromosome identifier (any string)<br>**pos**: SNP position (in bp)<br>**EA**: effective allele (linked to beta)<br>**RA**: reference allele           |
+| `chr`       | String (e.g. `"chr{num}"`)  | Chromosome where the SNP is located. Usually `"chr{num}"` format, but can be any string.                                                                            |
+| `pos`       | Numeric (bp)               | Position of the SNP in base pairs (bp) on the physical map of the genome.                                                                                           |
+
+**Note:** The row names of `ad$var` should be exactly equal to the values in `ad$var$snp`.
+
+---
+
+### obs (Observations)
+
+#### Absolutely Necessary Columns
+
+| Column Name    | Format / Content                            | Description                                                                                                                                                                                                                         |
+| -------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cs_name`      | `chr{num}::{study_id}::{trait_id}::{snp}`   | **chr{num}**: chromosome (formatted as in `var`)<br>**study_id**: identifier for the study<br>**trait_id**: refers to the trait (equivalent to `phenotype_id`)<br>**snp**: SNP with the highest logABF within the credible set (formatted as in `ad$var$snp`).            |
+| `chr`          | String (e.g. `"chr{num}"`)                   | Chromosome where the credible set is located (same format as the `chr` field in `var`).                                                                                                                                             |
+| `start`        | Numeric (bp)                                | Start position (in bp) of the analyzed locus, representing the beginning of the locus used for fine mapping.                                                                                                                        |
+| `end`          | Numeric (bp)                                | End position (in bp) of the analyzed locus.                                                                                                                                                                                         |
+| `study_id`     | String                                      | Identifier for the study.                                                                                                                                                                                                           |
+| `phenotype_id` | String                                      | Identifier for the trait/phenotype analyzed within the corresponding study.                                                                                                                                                         |
+| `min_res_labf` | Numeric (log-scale)                         | Minimal value of logABF in the locus. If logABF for all SNPs is not available, approximate using:<br><br>``[logsum(logABF)/coverage] - log(N_snps - N_CS_SNPs)``<br><br>- **coverage**: requested coverage (usually 99% or 95%)<br>- **logsum(logABF)**: log of the sum of ABF for SNPs in the credible set (using a log-sum to avoid overflow from extremely large values)<br>- Subtracting **log(N_snps - N_CS_SNPs)** gives the log(mean(ABF)) among SNPs outside the credible set. |
+
+**Note:** The row names of `ad$obs` should be exactly equal to the values in `ad$obs$cs_name`.
+
+---
+
+#### Highly Advised to Have
+
+| Column Name       | Format / Content     | Description                                                                                               |
+| ----------------- | -------------------- | --------------------------------------------------------------------------------------------------------- |
+| `min.abs.corr`    | Numeric              | Purity metric for the credible set: minimal absolute correlation between SNPs within the credible set.    |
+| `mean.abs.corr`   | Numeric              | Mean absolute correlation among SNPs within the credible set.                                             |
+| `median.abs.corr` | Numeric              | Median absolute correlation among SNPs within the credible set.                                           |
+
+---
+
+#### Good to Have
+
+| Column Name   | Format / Content   | Description                                                                                            |
+| ------------- | ------------------ | ------------------------------------------------------------------------------------------------------ |
+| `top_pvalue`  | Numeric            | Lowest (either nominal or conditional) P-value of genetic association in the locus (useful for filtering). |
+| `panel`       | String             | Name of the imputation panel used.                                                                     |
+
 ## Additional Resources
 
 If the runtime for your colocalization tests becomes large, use the [flanders_nf_coloc](https://github.com/Biostatistics-Unit-HT/flanders_nf_coloc) Nextflow pipeline for scalable colocalization analysis.
