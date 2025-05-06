@@ -203,7 +203,9 @@ If you do not have an AnnData object yet:
 | `end`          | Numeric (bp)                                | End position (in bp) of the analyzed locus.                                                                                                                                                                                         |
 | `study_id`     | String                                      | Identifier for the study.                                                                                                                                                                                                           |
 | `phenotype_id` | String                                      | Identifier for the trait/phenotype analyzed within the corresponding study.                                                                                                                                                         |
-| `min_res_labf` | Numeric (log-scale)                         | Minimal value of logABF in the locus. If logABF for all SNPs is not available, approximate using:<br><br>``[logsum(logABF)/coverage] - log(N_snps - N_CS_SNPs)``<br><br>- **coverage**: requested coverage (usually 99% or 95%)<br>- **logsum(logABF)**: log of the sum of ABF for SNPs in the credible set (using a log-sum to avoid overflow from extremely large values)<br>- Subtracting **log(N_snps - N_CS_SNPs)** gives the log(mean(ABF)) among SNPs outside the credible set. |
+| `min_res_labf` | Numeric (log-scale)                         | Minimal value of logABF in the locus. If logABF for all SNPs is not available, approximate using:<br><br>``[logsum(logABF)/coverage] - log(N_snps - N_CS_SNPs)``
+| coverage | Numeric | requested coverage (usually 99% or 95%)
+| logsum(logABF)| Numeric| log of the sum of ABF for SNPs in the credible set (using a log-sum to avoid overflow from extremely large values) | Subtracting **log(N_snps - N_CS_SNPs)** gives the log(mean(ABF)) among SNPs outside the credible set. |
 
 **Note:** The row names of `ad$obs` should be exactly equal to the values in `ad$obs$cs_name`.
 
