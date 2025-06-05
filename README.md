@@ -47,8 +47,8 @@ BiocManager::install("scrnaseq")
 # Install the flanders package
 # You need the devtools package if not installed.
 install.packages("devtools")
-devtools::install_github("anndata/anndataR")
-devtools::install_github("Biostatistics-Unit-HT/flanders")
+install.packages("anndata")
+devtools::install_github("Biostatistics-Unit-HT/flanders_r")
 ```
 This guide installs all dependencies from CRAN and Bioconductor for a straightforward R-based setup.
 ### Installation via Conda Environment
