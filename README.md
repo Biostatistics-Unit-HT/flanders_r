@@ -42,7 +42,7 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install("SingleCellExperiment")
 BiocManager::install("zellkonverter")
-BiocManager::install("scrnaseq")
+BiocManager::install("scRNAseq")
 
 # Install the flanders package
 # You need the devtools package if not installed.
