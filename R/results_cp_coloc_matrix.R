@@ -72,7 +72,6 @@
 #' to higher-order community structures.
 #'
 #' @seealso
-#' \code{\link{extract.abf.list.matrix}}, \code{\link{coloc.abf.matrix}},
 #' \code{\link[qgraph]{qgraph}}, \code{\link[qgraph]{getWmat}},
 #' \code{\link[igraph]{graph_from_adjacency_matrix}}, \code{\link[igraph]{components}}
 #'
