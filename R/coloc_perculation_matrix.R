@@ -1,7 +1,19 @@
 #' Coloc percolation engine
 #'
-#' @param finemap.data = matrix of log bayes factors as produced by the finemapping tool (ie. Susie). Each column should correspond to a credible set while each row is a different SNP
+#' @description
+#' This function takes fine-mapping data (approximated Bayes factors) for multiple
+#' traits and performs a "colocalization-guided" percolation analysis.
+#' It first calculates pairwise colocalization probabilities (PP.H4.abf) between
+#' all input traits/regions, then thresholds these probabilities to create a binary
+#' adjacency matrix. This matrix is then used to identify fully connected components
+#' or "cliques" of colocalized signals. Optionally, it can apply `icoloc.regularization`
+#' to the fine-mapping data before colocalization.
+#'
+#' @param finemap.data = matrix of log bayes factors as produced by the finemapping tool (i.e. Susie). Each column should correspond to a credible set while each row is a different SNP
 #' @param pp.H4.threshold = numeric from 0 to 1 PP H4 threshold to call positive colocalization. Default is set to 0.75
+#' @param icoloc.reg A logical value. If `TRUE`, the `icoloc.regularization`
+#'   function will be applied to each column of `finemap.data` prior to
+#'   calculating colocalization probabilities. Defaults to `TRUE`.
 #'
 #' @return
 #' A list object with the following elements:
