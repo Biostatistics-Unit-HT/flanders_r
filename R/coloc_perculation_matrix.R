@@ -1,5 +1,4 @@
-
-#' Coloc perculation engine
+#' Coloc percolation engine
 #'
 #' @param finemap.data = matrix of log bayes factors as produced by the finemapping tool (ie. Susie). Each column should correspond to a credible set while each row is a different SNP
 #' @param pp.H4.threshold = numeric from 0 to 1 PP H4 threshold to call positive colocalization. Default is set to 0.75
@@ -25,19 +24,14 @@
 #'@import dplyr qgraph coloc
 #'
 #'
-coloc_perculation_matrix <- function(  finemap.data=cs.data
-                                     , pp.H4.threshold=0.75
-                                     , icoloc.reg=TRUE){
+coloc_percolation_matrix <- function(finemap.data = cs.data,
+                                     pp.H4.threshold=0.75,
+                                     icoloc.reg=TRUE){
 
   ### Step 1 create coloc matrix
   if(icoloc.reg==TRUE){
-
     finemap.data=apply(finemap.data,2,icoloc.regularization)
-
-
   }
-
-
   coloc.matrix=matrix(nrow=ncol(finemap.data),ncol=ncol(finemap.data))
   rownames(coloc.matrix)<-colnames(coloc.matrix)<-colnames(finemap.data)
   col.name=colnames(coloc.matrix)
@@ -47,43 +41,33 @@ coloc_perculation_matrix <- function(  finemap.data=cs.data
   pairs=pairs[keep,]
 
   for(i in 1:nrow(pairs)){
-    res=coloc.peRculation:::icoloc.ht(df1=data.frame(snp=row.names(finemap.data),lABF=finemap.data[,pairs[i,1]]),
+    res=icoloc(df1=data.frame(snp=row.names(finemap.data),lABF=finemap.data[,pairs[i,1]]),
                   df2=data.frame(snp=row.names(finemap.data),lABF=finemap.data[,pairs[i,2]]))
 
     coloc.matrix[pairs[i,1],pairs[i,2]]=res$summary$PP.H4.abf
   }
 
   ## prune all values below colocalization threshold
-
   coloc.matrix[coloc.matrix<pp.H4.threshold]=0
   coloc.matrix[coloc.matrix>0]=1
 
   # create colocalization graph
-
   W=qgraph::qgraph(coloc.matrix,labels=colnames(coloc.matrix),DoNotPlot=T)
-
   trait.list=colnames(coloc.matrix)
-
   Wmat <- qgraph::getWmat(W)
   labels <- as.vector(W$graphAttributes$Nodes$labels)
 
-  # identify flully connected cliques
-
-
+  # identify fully connected cliques
   cliques_unweighted <- unweighted(Wmat)
 
+  if(length(cliques_unweighted)>1){
 
-if(length(cliques_unweighted)>1){
-
-    ## perform recursive coloc perculation
-
-    results_unweighted <- results_cp_coloc_matrix(     W = Wmat
-                                                  ,     cliques = cliques_unweighted
-                                                  ,     labels =  labels
-                                                  ,     finemap.data =finemap.data
+    ## perform recursive coloc percolation
+    results_unweighted <- results_cp_coloc_matrix(W = Wmat,
+                                                  cliques = cliques_unweighted,
+                                                  labels =  labels,
+                                                  finemap.data =finemap.data
     )
-
-
 
     names(results_unweighted) <- c("list.of.communities.numbers","list.of.communities.labels",
                                    "shared.nodes.numbers","shared.nodes.labels",
@@ -99,22 +83,9 @@ if(length(cliques_unweighted)>1){
 
     return(returned_object)
 
-  }else{
+  } else {
     print("Only one clique detected")
     joint.finemapping=list(rowSums(finemap.data))
     returned_object=list(cp.object=NULL,abf.list=joint.finemapping,coloc.matrix=coloc.matrix)
-
-
-
-
   }
 }
-
-
-
-
-
-
-
-
-
