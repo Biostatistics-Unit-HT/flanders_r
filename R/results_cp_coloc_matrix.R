@@ -1,7 +1,90 @@
-results_cp_coloc_matrix <- function(         W=Wmat
-                                             ,      cliques=cliques_unweighted
-                                             ,      labels=labels
-                                             ,      finemap.data =finemap.data
+#' Perform Recursive Colocalization Percolation on a Matrix
+#'
+#' @description
+#' This function takes an initial set of cliques (communities of colocalized
+#' signals) and iteratively refines them through a recursive colocalization
+#' percolation process. In each iteration, it aggregates the approximated Bayes factors
+#' (ABFs) for the SNPs within the current level's communities, performs a
+#' pairwise colocalization analysis between these aggregated communities, and then
+#' identifies new, higher-level communities based on the colocalization results.
+#' This process continues until the community structure stabilizes.
+#' It also identifies shared nodes (signals) between the final communities.
+#'
+#' @param W An adjacency matrix (or a `qgraph` object from which `getWmat` can
+#'   extract an adjacency matrix) representing initial connections between traits/regions.
+#'   This is typically the thresholded colocalization matrix from a previous step.
+#' @param cliques A list of numeric vectors, where each vector contains the
+#'   indices of traits/regions (columns in `finemap.data`) belonging to an
+#'   initial set of cliques. This is often the output from an initial unweighted
+#'   clique detection on the first colocalization matrix.
+#' @param labels A character vector containing the labels (names) corresponding
+#'   to the traits/regions in `finemap.data`. These labels are used for the
+#'   output communities.
+#' @param finemap.data A matrix where rows represent SNPs and columns represent
+#'   different traits or genomic regions. The values within the matrix should be
+#'   approximated Bayes factors (lABF values) for each SNP in each trait/region.
+#'
+#' @return A list containing the results of the colocalization percolation:
+#'   \item{list.of.communities.numbers}{A list of numeric vectors, where each
+#'     vector contains the final numeric indices of traits/regions belonging
+#'     to each detected community after percolation.}
+#'   \item{list.of.communities.labels}{A list of character vectors, where each
+#'     vector contains the labels (names) of traits/regions belonging to each
+#'     detected community.}
+#'   \item{shared.nodes.numbers}{A numeric vector of indices of traits/regions
+#'     that are shared between two or more of the final communities. Empty if no
+#'     shared nodes are found or if there's only one community.}
+#'   \item{shared.nodes.labels}{A character vector of labels for traits/regions
+#'     that are shared between two or more of the final communities. Empty if no
+#'     shared nodes are found or if there's only one community.}
+#'   \item{coloc.matrix}{The final binary adjacency matrix (`W_comm`) derived
+#'     from the colocalization analysis of the aggregated ABFs at the last
+#'     percolation level. This matrix reflects the connections between the
+#'     detected communities.}
+#'
+#' @details
+#' The function operates recursively until the community structure stabilizes:
+#' \enumerate{
+#'   \item **Initialize:** It starts with the provided `cliques` as the first
+#'     level of communities.
+#'   \item **Aggregate ABFs:** It calls `extract.abf.list.matrix` to combine
+#'     the ABFs for SNPs within each community at the current level.
+#'   \item **Colocalization Between Communities:** It then uses `coloc.abf.matrix`
+#'     to perform pairwise colocalization analysis between these newly aggregated
+#'     ABF sets. This results in a new adjacency matrix (`W_comm`) where nodes
+#'     are now the communities from the previous level.
+#'   \item **Identify New Communities:** `qgraph::qgraph` and `unweighted` (from `qgraph` or `igraph`)
+#'     are used to detect fully connected components within this new adjacency matrix.
+#'     These form the communities for the next level. `igraph::components`
+#'     is used to check if the number of communities has stabilized.
+#'   \item **Recursion:** Steps 2-4 are repeated. If the number of detected
+#'     communities remains the same across iterations, the process stops.
+#'   \item **Unravel Hierarchy:** Once stabilization is achieved, the function
+#'     unravels the hierarchical `structure_level` to determine the final,
+#'     most granular set of trait/region memberships for each community.
+#'   \item **Identify Shared Nodes:** It then finds any traits/regions that are
+#'     common to more than one of the final communities.
+#'   \item **Assign Labels:** Finally, it translates the numeric community and
+#'     shared node lists into human-readable labels using the input `labels` vector.
+#' }
+#' This percolation approach allows for the discovery of nested or overlapping
+#' colocalization patterns, building from initial trait-level colocalizations
+#' to higher-order community structures.
+#'
+#' @seealso
+#' \code{\link{extract.abf.list.matrix}}, \code{\link{coloc.abf.matrix}},
+#' \code{\link[qgraph]{qgraph}}, \code{\link[qgraph]{getWmat}},
+#' \code{\link[igraph]{graph_from_adjacency_matrix}}, \code{\link[igraph]{components}}
+#'
+#' @importFrom qgraph qgraph getWmat
+#' @importFrom igraph graph_from_adjacency_matrix components
+#' @importFrom R.utils last # For last(structure_level)
+#' @export
+#'
+results_cp_coloc_matrix <- function(W=Wmat,
+                                    cliques=cliques_unweighted,
+                                    labels=labels,
+                                    finemap.data=finemap.data
 ){
 
   #retrieve abfs
@@ -10,27 +93,22 @@ results_cp_coloc_matrix <- function(         W=Wmat
   structure_level[[1]]$clique.map=cliques
   level=1
 
-
-
   tmp.abf=extract.abf.list.matrix(data=finemap.data,clique.list=structure_level)
-  print(6)
+#  print(6)
 
   W_comm=coloc.abf.matrix(clique.abfs = tmp.abf)
   W_comm=W_comm$adiacency.matrix
   fully.con=unweighted(qgraph::getWmat(qgraph::qgraph(W_comm)))
   W_i_comm <- igraph::graph_from_adjacency_matrix(as.matrix(W_comm),mode = "max")
   members <- igraph::components(W_i_comm)$membership
-  print(7)
-
-
+#  print(7)
 
   while(length(fully.con)!=length(unique(members))){
     print(level)
     level=level+1
     structure_level[[level]]=list(clique.map=NA)
     structure_level[[level]]$clique.map=fully.con
-    tmp.abf=extract.abf.list.matrix(data=finemap.data
-                                    ,clique.list=structure_level)
+    tmp.abf=extract.abf.list.matrix(data=finemap.data, clique.list=structure_level)
 
     W_comm=coloc.abf.matrix(tmp.abf)
     W_comm=W_comm$adiacency.matrix
@@ -43,8 +121,6 @@ results_cp_coloc_matrix <- function(         W=Wmat
       structure_level[[level]]$clique.map=fully.con
 
     }
-
-
   }
 
   final.groups=last(structure_level)$clique.map
@@ -56,31 +132,20 @@ results_cp_coloc_matrix <- function(         W=Wmat
 
       }
     }
-  }else{
+  } else {
 
     split=c()
     for(i in 1:length(fully.con)){
-
       split[[i]]=cliques[fully.con[[i]]]
-
     }
 
     #members <- igraph::components(W_i_comm)$membership
     #split <- split(cliques_unweighted, fully.con)
     final.groups <- lapply(split, function(x) sort(unique(unlist(x))))
-
-
   }
 
-
-  print("adiacency created")
-
+  message("adiacency created")
   communities=final.groups
-
-
-
-
-
 
   #if there is more than one community...
   #get shared nodes
@@ -114,7 +179,6 @@ results_cp_coloc_matrix <- function(         W=Wmat
   if (length(communities) == 0) {
     communities_labels <- list()
   }
-
 
   #if there is more than one community...
   #create vector with shared nodes with labels from qgraph object instead of node numbers
