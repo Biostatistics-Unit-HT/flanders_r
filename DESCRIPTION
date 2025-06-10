@@ -15,7 +15,9 @@ Imports:
   data.table,
   dplyr,
   scRNAseq,
-  zellkonverter
+  zellkonverter,
+  igraph,
+  qgraph
 ImportFrom: 
   stats, setNames
 License: GPL-3
