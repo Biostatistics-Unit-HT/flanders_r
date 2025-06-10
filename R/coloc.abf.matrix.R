@@ -60,7 +60,7 @@
 #' @importFrom Matrix tril
 #' @export
 #'
-coloc.abf.matrix=function(clique.abfs=list(),threshold=0.75){
+coloc.abf.matrix <- function(clique.abfs=list(),threshold=0.75){
   W_comm=matrix(nrow = length(clique.abfs),ncol=length(clique.abfs))
   for(i in 1:(nrow(W_comm)-1)){
     for(j in (i+1):nrow(W_comm)){
