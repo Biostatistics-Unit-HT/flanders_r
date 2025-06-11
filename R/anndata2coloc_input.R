@@ -154,6 +154,8 @@ anndata2coloc_input <- function(ad_or_sce) {
   } else {
     stop("Unexpected number of columns in coloc_combo")
   }
-
+  
+  coloc_combo <- coloc_combo %>% arrange(chr)
+  
   return(coloc_combo)
 }
