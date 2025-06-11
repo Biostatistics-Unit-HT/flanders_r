@@ -161,10 +161,19 @@ If you do not have an AnnData object yet:
 ```
 
 4. **Perform Colocalization Analysis**
-   ```r
-    coloc_results <- anndata2coloc(sce, coloc_input)
-    print(coloc_results)
-   ```
+```r
+   coloc_results <- anndata2coloc(sce, coloc_input)
+   print(coloc_results)
+```
+
+5. **Identify simple modules/group of co-regulated signals and create credible sets-wise master table**
+```r
+   library(igraph)
+
+   modules <- identify_simple_modules(coloc_results, pp.H4.threshold=0.75, check_connectivity=FALSE)
+   master_table <- create_master_table(ad, modules)
+   print(master_table)
+   ```   
 ---
 
 ## Function Reference
@@ -177,6 +186,12 @@ If you do not have an AnnData object yet:
 
 - **anndata2coloc**  
   Performs colocalization tests using the provided AnnData object and trait-pair table.
+
+- **identify_simple_modules**
+  Defines modules (communities) of colocalizing signals using a graph-based approach. Optionally, checks whether each module is fully connected.
+
+- **create_master_table**
+  Constructs a master table where each credible set has been assigned to a module
 
 ---
 
