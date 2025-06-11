@@ -23,7 +23,7 @@
 #'
 #' @return If `check_connectivity = FALSE`, returns a `data.table` with:
 #'   \itemize{
-#'     \item `cs`: Character, names of genomic regions or traits.
+#'     \item `cs_name`: Character, names of genomic regions or traits.
 #'     \item `module`: Integer, assigned module ID.
 #'   }
 #'   If `check_connectivity = TRUE`, returns a named list with two `data.tables`:
@@ -59,7 +59,7 @@ identify_simple_modules <- function(coloc.results, pp.H4.threshold=0.75, check_c
     ## Define modules based of colocalisation results
     coloc.graph <- igraph::graph_from_data_frame(coloc.results[, c("hit1","hit2")])
     modules <- igraph::components(coloc.graph)
-    modules <- data.table(cs = names(modules$membership), module = modules$membership)
+    modules <- data.table(cs_name = names(modules$membership), module = modules$membership)
     modules <- modules[order(modules$module), ]
     #modules.size <- table(modules$module)
     message(length(unique(modules$module)), " simple modules identified")
@@ -73,7 +73,7 @@ identify_simple_modules <- function(coloc.results, pp.H4.threshold=0.75, check_c
     fully_connected <- c()
     
     for(n_module in seq_along(unique(modules$module))) {
-      traits <- modules$cs[modules$module == n_module]
+      traits <- modules$cs_name[modules$module == n_module]
       a <- igraph::V(coloc.graph)
       tmp <- subgraph(coloc.graph, which(names(a) %in% traits))
       
