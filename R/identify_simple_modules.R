@@ -2,11 +2,10 @@
 #'
 #' @description
 #' This function takes a data frame of pairwise colocalization results, filters
-#' them based on a posterior probability of shared causal variant (PP.H4.abf)
+#' them based on a posterior probability of shared causal variant (`PP.H4.abf`)
 #' threshold, and then defines modules (communities) of colocalizing genomic
-#' regions or traits using a graph-based approach. It also assesses whether
-#' these identified modules are fully connected, categorizing them into
-#' partly connected and fully connected.
+#' regions or traits using a graph-based approach. Optionally, it checks whether
+#' each module is fully connected.
 #'
 #' @param coloc.results A data frame containing pairwise colocalization results.
 #'   It is expected to have at least the following columns:
@@ -18,42 +17,35 @@
 #' @param pp.H4.threshold A numeric value (between 0 and 1) representing the
 #'   threshold for `PP.H4.abf`. Only pairs with a `PP.H4.abf` strictly greater
 #'   than this threshold will be considered for module definition. Defaults to 0.75.
+#' @param check_connectivity Logical. If `TRUE` (default), each identified module
+#'   is checked for full connectivity. If `FALSE`, modules are returned without
+#'   further connectivity checks.
 #'
-#' @return A named list containing:
+#' @return If `check_connectivity = FALSE`, returns a `data.table` with:
 #'   \itemize{
-#'     \item `modules`: A `data.table` with two columns:
-#'       \itemize{
-#'         \item `cs`: Character, representing the names of the genomic regions/traits.
-#'         \item `module`: Numeric, the assigned module ID for each `cs`.
-#'       }
-#'       The data.table is ordered by module ID.
-#'     \item `partly_connected_modules`: A numeric vector of module IDs that are
-#'       not fully connected (i.e., not all traits within the module colocalize
-#'       with every other trait in that same module).
-#'     \item `fully_connected_modules`: A numeric vector of module IDs that are
-#'       fully connected.
+#'     \item `cs`: Character, names of genomic regions or traits.
+#'     \item `module`: Integer, assigned module ID.
 #'   }
-#'   If no pair-wise colocalization results meet the `pp.H4.threshold`, the
-#'   function returns `NULL` and prints a message.
+#'   If `check_connectivity = TRUE`, returns a named list with two `data.tables`:
+#'   \itemize{
+#'     \item `partly_connected_modules`: Subset of modules that are not fully connected.
+#'     \item `fully_connected_modules`: Subset of modules that are fully connected.
+#'   }
+#'   If no results pass the threshold, returns `NULL`.
 #'
 #' @details
 #' The function first filters the input `coloc.results` to retain only those
-#' pairs where `PP.H4.abf` exceeds `pp.H4.threshold`.
+#' pairs where `PP.H4.abf` exceeds the specified threshold.
 #'
-#' An `igraph` graph is then constructed where nodes are the unique `hit1` and `hit2`
-#' identifiers (genomic regions/traits) and edges exist between colocalizing pairs.
-#' Connected components within this graph are identified as `modules`.
+#' An `igraph` graph is built using the `hit1` and `hit2` columns as edges.
+#' Connected components in this graph define modules. If connectivity is checked,
+#' each module is evaluated to determine if all traits within it form a fully
+#' connected clique (i.e., every node has an edge to every other node).
 #'
-#' For each identified module, the function checks if all nodes within that
-#' module are fully connected (i.e., if every trait within the module colocalizes
-#' with every other trait in the same module). It calculates the `expected_edges`
-#' for a fully connected subgraph of `n` nodes as `n * (n - 1) / 2`.
-#' Modules that are not fully connected might indicate the need for further
-#' hierarchical colocalization analysis or suggest complex relationships.
-#'
-#' Progress messages are printed periodically during module assessment.
+#' Progress updates are printed every 500 modules during connectivity checks.
 #'
 #' @importFrom igraph graph_from_data_frame components V subgraph ecount
+#' @import data.table
 #'
 #' @export
 #'
