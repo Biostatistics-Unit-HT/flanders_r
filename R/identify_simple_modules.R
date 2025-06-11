@@ -57,7 +57,7 @@
 #'
 #' @export
 #'
-simple_modules_connectivity <- function(coloc.results, pp.H4.threshold=0.75) {  
+identify_simple_modules <- function(coloc.results, pp.H4.threshold=0.75, check_connectivity=TRUE) {  
   
   ## Filter pair-wise coloc results according to PPH4 threshold
   coloc.results <- coloc.results[round(as.numeric(coloc.results$PP.H4.abf), 2) > pp.H4.threshold, ]
@@ -67,15 +67,20 @@ simple_modules_connectivity <- function(coloc.results, pp.H4.threshold=0.75) {
     ## Define modules based of colocalisation results
     coloc.graph <- igraph::graph_from_data_frame(coloc.results[, c("hit1","hit2")])
     modules <- igraph::components(coloc.graph)
-    modules <- data.frame(cs = names(modules$membership), module = modules$membership)
+    modules <- data.table(cs = names(modules$membership), module = modules$membership)
     modules <- modules[order(modules$module), ]
     #modules.size <- table(modules$module)
+    message(length(unique(modules$module)), " simple modules identified")
+    
+    if(check_connectivity==FALSE){ # Return modules as they are
+      return(modules)
+    }
     
     ## Identify modules that need further refining (not fully connected modules!)
     partly_connected <- c()
     fully_connected <- c()
     
-    for (n_module in seq_along(unique(modules$module))) {
+    for(n_module in seq_along(unique(modules$module))) {
       traits <- modules$cs[modules$module == n_module]
       a <- igraph::V(coloc.graph)
       tmp <- subgraph(coloc.graph, which(names(a) %in% traits))
@@ -89,15 +94,18 @@ simple_modules_connectivity <- function(coloc.results, pp.H4.threshold=0.75) {
         fully_connected <- c(fully_connected, n_module)
       }
       
-      # Print every 100 iterations
+      # Print every 500 iterations
       if (n_module %% 500 == 0 || n_module == length(unique(modules$module))) {
         message(sprintf("Processed %d of %d modules...", n_module, length(unique(modules$module))))
       }
     }
-  return(
-    list(partly_connected_modules = partly_connected,
-      fully_connected_modules = fully_connected)
-  )
+    partly_connected_df <- modules[module %in% partly_connected]
+    fully_connected_df <- modules[module %in% fully_connected]
+    
+    return(
+      list(partly_connected_modules = partly_connected_df,
+        fully_connected_modules = fully_connected_df)
+    )
 
   } else {
     message("No pairwise colocalization test found with PPH4 >", pp.H4.threshold)
