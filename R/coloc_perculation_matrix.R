@@ -53,7 +53,7 @@ coloc_percolation_matrix <- function(finemap.data = cs.data,
   pairs=pairs[keep,]
 
   for(i in 1:nrow(pairs)){
-    res=icoloc(df1=data.frame(snp=row.names(finemap.data),lABF=finemap.data[,pairs[i,1]]),
+    res=icoloc.ht(df1=data.frame(snp=row.names(finemap.data),lABF=finemap.data[,pairs[i,1]]),
                   df2=data.frame(snp=row.names(finemap.data),lABF=finemap.data[,pairs[i,2]]))
 
     coloc.matrix[pairs[i,1],pairs[i,2]]=res$summary$PP.H4.abf

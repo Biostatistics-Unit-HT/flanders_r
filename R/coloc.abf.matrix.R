@@ -3,7 +3,7 @@
 #' @description
 #' This function performs pairwise colocalization across signals in the same
 #' clique and computes an adjacency matrix from approximated Bayes factors (ABFs).
-#' It iterates through all unique pairs of cliques and applies the `icoloc`
+#' It iterates through all unique pairs of cliques and applies the `icoloc.ht`
 #' function to determine the posterior probability of signals
 #' sharing a common causal variant. An adjacency matrix is then
 #' derived by thresholding these probabilities.
@@ -26,9 +26,9 @@
 #'     is at or above the `threshold`, and 0 otherwise. The diagonal elements are set to 0.}
 #'
 #' @details
-#' The function uses `icoloc` for the colocalization analysis, which requires
+#' The function uses `icoloc.ht` for the colocalization analysis, which requires
 #' input dataframes with 'snp' and 'lABF' columns. The parameters `p1`, `p2`, and `p12`
-#' within `icoloc` are fixed at 1e-4, 1e-4, and 1e-5 respectively, representing
+#' within `icoloc.ht` are fixed at 1e-4, 1e-4, and 1e-5 respectively, representing
 #' prior probabilities for different colocalization hypotheses.
 #' The `adiacency.matrix` is derived from the `coloc.matrix` by applying the
 #' specified `threshold`. Only the lower triangle of `coloc.matrix` is explicitly
@@ -64,7 +64,7 @@ coloc.abf.matrix <- function(clique.abfs=list(),threshold=0.75){
   W_comm=matrix(nrow = length(clique.abfs),ncol=length(clique.abfs))
   for(i in 1:(nrow(W_comm)-1)){
     for(j in (i+1):nrow(W_comm)){
-      res=icoloc(
+      res=icoloc.ht(
         df1=data.frame(snp=names(clique.abfs[[i]]),lABF=unlist(clique.abfs[[i]])),
         df2=data.frame(snp=names(clique.abfs[[j]]),lABF=unlist(clique.abfs[[j]])),
         p1 = 1e-4,
