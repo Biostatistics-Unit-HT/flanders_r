@@ -52,7 +52,7 @@
 identify_simple_modules <- function(coloc.results, pp.H4.threshold=0.75, check_connectivity=TRUE) {  
   
   ## Filter pair-wise coloc results according to PPH4 threshold
-  coloc.results <- coloc.results[round(as.numeric(coloc.results$PP.H4.abf), 2) > pp.H4.threshold, ]
+  coloc.results <- coloc.results[coloc.results$PP.H4.abf > pp.H4.threshold, ]
 
   if(nrow(coloc.results)>0){
 
