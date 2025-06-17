@@ -99,5 +99,7 @@ coloc_percolation_matrix <- function(finemap.data = cs.data,
     print("Only one clique detected")
     joint.finemapping=list(rowSums(finemap.data))
     returned_object=list(cp.object=NULL,abf.list=joint.finemapping,coloc.matrix=coloc.matrix)
+    
+    return(returned_object)
   }
 }
