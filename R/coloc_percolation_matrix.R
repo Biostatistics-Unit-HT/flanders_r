@@ -9,7 +9,7 @@
 #' or "cliques" of colocalized signals. Optionally, it can apply `icoloc.regularization`
 #' to the fine-mapping data before colocalization.
 #'
-#' @param finemap.data = matrix of log bayes factors as produced by the finemapping tool (i.e. Susie). Each column should correspond to a credible set while each row is a different SNP
+#' @param finemap.data = matrix of log bayes factors obtained by finemapping tool (i.e. Susie), stored in assay(sce, "X"). Each column should correspond to a credible set while each row is a different SNP
 #' @param pp.H4.threshold = numeric from 0 to 1 PP H4 threshold to call positive colocalization. Default is set to 0.75
 #' @param icoloc.reg A logical value. If `TRUE`, the `icoloc.regularization`
 #'   function will be applied to each column of `finemap.data` prior to
@@ -20,15 +20,15 @@
 #'     \describe{
 #'\item{ cp.object }{list object with the following items:
 #'    \itemize{
-#'      \item{indexes of each member of each comunity}
-#'      \item{labels for the members in each comunity}
+#'      \item{indexes of each member of each community}
+#'      \item{labels for the members in each community}
 #'      \item{index of shared nodes}
 #'      \item{index of shared nodes}
 #'      \item{shared nodes labels}
-#'      \item{colocalization matrix of final omunities}
+#'      \item{colocalization matrix of final communities}
 #'    }
 #'}
-#'.    \item{ abf.list }{list with vector of lABF per final comunity}
+#'.    \item{ abf.list }{list with vector of lABF per final community}
 #'     \item{ coloc.matrix }{ adiacency matrix of colocalising credible sets (usefull for downstream plotting)}
 #' }
 #' @export
