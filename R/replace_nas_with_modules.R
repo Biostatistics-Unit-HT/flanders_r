@@ -16,8 +16,10 @@
 #'   in the `module` column are replaced with unique numeric module IDs.
 #'
 #' @examples
+#' \dontrun{
 #' df <- data.frame(cs_name = c("a", "b", "c"), module = c(1, NA, NA))
 #' replace_nas_with_modules(df, start_value = 100)
+#'}
 #'
 #' @keywords internal
 #'
