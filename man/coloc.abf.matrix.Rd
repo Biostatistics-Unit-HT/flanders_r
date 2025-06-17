@@ -44,6 +44,7 @@ specified `threshold`. Only the lower triangle of `coloc.matrix` is explicitly
 calculated due to symmetry, and then mirrored.
 }
 \examples{
+\dontrun{
 # Example usage
 # For demonstration, create some dummy ABF lists
 set.seed(123)
@@ -65,6 +66,7 @@ print(results$adiacency.matrix)
 # Example with a lower threshold
 results_low_thresh <- coloc.abf.matrix(my_clique_abfs, threshold = 0.5)
 print(results_low_thresh$adiacency.matrix)
+}
 
 }
 \keyword{internal}

@@ -4,11 +4,13 @@
 \alias{assign_post_cp_tmp_module_names}
 \title{Assign Random Module Names to Post-colocalization Modules}
 \usage{
-assign_post_cp_tmp_module_names(groups)
+assign_post_cp_tmp_module_names(groups, traits)
 }
 \arguments{
 \item{groups}{A list object that contains a component `cp.object$list.of.communities.labels`,
 which should be a list of community labels (e.g., vectors or data frames).}
+
+\item{traits}{A list of credible set names}
 }
 \value{
 A `data.frame` with at least two columns:

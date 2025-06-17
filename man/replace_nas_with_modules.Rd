@@ -25,8 +25,10 @@ assigning module labels to traits or regions that were not part of any
 colocalized module (i.e., singletons).
 }
 \examples{
+\dontrun{
 df <- data.frame(cs_name = c("a", "b", "c"), module = c(1, NA, NA))
 replace_nas_with_modules(df, start_value = 100)
+}
 
 }
 \keyword{internal}

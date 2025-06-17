@@ -56,6 +56,7 @@ combines the evidence for colocalization across all traits/regions within a cliq
 into a single ABF value per SNP for that clique.
 }
 \examples{
+\dontrun{
 # Dummy fine-mapping data (SNPs as rows, traits as columns)
 set.seed(123)
 finemap_data_example <- matrix(rnorm(50, mean = 2, sd = 1), nrow = 10, ncol = 5,
@@ -92,7 +93,7 @@ hierarchical_clique_list <- list(
 # So, final groups are {1,2,3} and {4,5}.
 
 complicated_clique_list <- list(
-  list(clique.map = list("trait1", "trait2"), "trait3", "trait4", "trait5")), # First level of grouping
+  list(clique.map = list("trait1", "trait2"), "trait3", "trait4", "trait5"), # First level of grouping
   list(clique.map = list(c(1, 2), c(3))) # Second level of grouping referring to the first level's cliques
 )
 
@@ -112,6 +113,7 @@ wrapped_cp_output <- list(list(clique.map = cp_output_mimic$list.of.communities.
 abf_results_mimic <- extract.abf.list.matrix(data = finemap_data_example,
                                              clique.list = wrapped_cp_output)
 print(abf_results_mimic)
+}
 
 }
 \keyword{internal}
