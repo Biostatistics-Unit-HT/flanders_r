@@ -36,6 +36,10 @@ install.packages("data.table")
 install.packages("dplyr")
 install.packages("Matrix")
 install.packages("optparse")
+install.packages("R.utils")
+install.packages("stringi")
+install.packages("qgraph")
+install.packages("igraph")
 
 # You need these Bioconductor packages:
 if (!requireNamespace("BiocManager", quietly = TRUE))
