@@ -69,10 +69,10 @@ mamba create -p /ssu/bsssu/conda_envs_bsssu/flanders_r_2.0 \
   r-matrix=1.7_3 \
   r-optparse=1.7.5 \
   r-roxygen2=7.3.2 \
-  r-igraph=2.0.7 \
+  r-igraph=2.0.3 \
   r-qgraph=1.9.8 \
   r-r.utils=2.13.0 \
-  r-stringi=1.8.7
+  r-stringi
 
 conda activate <your_folder_with_conda_envs>/flanders_r
 git clone git@github.com:Biostatistics-Unit-HT/flanders_r.git
