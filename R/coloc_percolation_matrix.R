@@ -81,10 +81,6 @@ coloc_percolation_matrix <- function(finemap.data = cs.data,
                                                   finemap.data =finemap.data
     )
 
-    names(results_unweighted) <- c("list.of.communities.numbers","list.of.communities.labels",
-                                   "shared.nodes.numbers","shared.nodes.labels",
-                                   "coloc.matrix")
-
     cl.list=list(list())
     cl.list[[1]]$clique.map=results_unweighted$list.of.communities.numbers
 

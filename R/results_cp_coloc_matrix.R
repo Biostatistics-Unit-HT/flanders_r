@@ -193,7 +193,9 @@ results_cp_coloc_matrix <- function(W=Wmat,
   if (length(shared_labels) == 0) {shared_labels <- c()}
 
   #return community lists, shared nodes vectors, and isolated nodes vectors
-  return(list(communities,communities_labels,
-              shared,shared_labels,
-              W_comm))
+  return(list(list.of.communities.numbers=communities,
+              list.of.communities.labels=communities_labels,
+              shared.nodes.numbers=shared,
+              shared.nodes.labels=shared_labels,
+              coloc.matrix=W_comm))
 }
