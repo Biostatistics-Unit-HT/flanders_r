@@ -3,7 +3,6 @@ image: rocker/tidyverse
 
 stages:
   - check
-  - build
 
 # Bootstrap CRAN and Bioconductor dependencies
 .before_script_bioc: &before_script_bioc |
@@ -22,20 +21,3 @@ check-job:
     - *before_script_bioc
   script:
     - R CMD check ./ --no-manual
-
-build-job:
-  stage: build
-  before_script:
-    - *before_script_bioc
-  script:
-    # Regenerate documentation
-    - Rscript -e "roxygen2::roxygenise()"
-    # Build source package
-    - R CMD build ./
-    # Install the built tarball into the custom library
-    - |
-      PKG_VERSION=$(grep -i ^Version DESCRIPTION | cut -d ':' -f2 | tr -d ' ')
-      PKG_NAME=$(grep -i ^Package DESCRIPTION | cut -d ':' -f2 | tr -d ' ')
-      TARBALL="${PKG_NAME}_${PKG_VERSION}.tar.gz"
-      echo "Installing ${TARBALL} to custom library..."
-      Rscript -e "install.packages('${TARBALL}', lib='/ssu/bsssu/conda_envs_bsssu/flanders_r_2.0/lib/R/library/', repos=NULL, type='source')"
