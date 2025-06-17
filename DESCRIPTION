@@ -17,7 +17,9 @@ Imports:
   scRNAseq,
   zellkonverter,
   igraph,
-  qgraph
+  qgraph,
+  stringi,
+  R.utils
 ImportFrom: 
   stats, setNames
 License: GPL-3
