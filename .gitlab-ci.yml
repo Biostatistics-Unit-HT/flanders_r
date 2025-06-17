@@ -1,53 +1,53 @@
 # .gitlab-ci.yml
-# NOTE: this must run on a shell runner that has
-# /ssu/bsssu/conda_envs_bsssu/flanders_r_2.0 already present.
-
-image: rocker/tidyverse   # still need R & devtools etc.
-
-variables:
-  # point R to the conda‐installed libraries
-  R_LIBS_USER: "/ssu/bsssu/conda_envs_bsssu/flanders_r_2.0/lib/R/library"
+image: rocker/tidyverse
 
 stages:
   - test
   - build
   - check
 
-.before_script_conda: &before_script_conda |
-  # activate your prebuilt conda env
-  source /ssu/bsssu/conda_envs_bsssu/flanders_r_2.0/bin/activate
-  # confirm R sees the right library
-  Rscript -e "cat('Library is', .libPaths(), '\n')"
+# Bootstrap CRAN and Bioconductor dependencies
+.before_script_bioc: &before_script_bioc |
+  Rscript -e " \
+    pkgs <- c('coloc','susieR','anndata'); \
+    install.packages(pkgs, repos='https://cloud.r-project.org'); \
+    if (!requireNamespace('BiocManager', quietly=TRUE)) \
+      install.packages('BiocManager', repos='https://cloud.r-project.org'); \
+    BiocManager::install(c('SingleCellExperiment','zellkonverter','scRNAseq'), \
+                         ask=FALSE, update=FALSE) \
+  "
 
 test-job:
   stage: test
   before_script:
-    - *before_script_conda
+    - *before_script_bioc
   script:
-    # now flanders should be installed in that env already, or we'll install it in build
+    # Run package tests
     - Rscript -e "devtools::test()"
 
 build-job:
   stage: build
   before_script:
-    - *before_script_conda
+    - *before_script_bioc
   script:
-    # regenerate docs & build
+    # Regenerate documentation
     - Rscript -e "roxygen2::roxygenise()"
+    # Build source package
     - R CMD build ./
-    # install only flanders (and its deps are already in the conda env)
+    # Install the built tarball into a custom library and then check it
     - |
       PKG_VERSION=$(grep -i ^Version DESCRIPTION | cut -d ':' -f2 | tr -d ' ')
       PKG_NAME=$(grep -i ^Package DESCRIPTION | cut -d ':' -f2 | tr -d ' ')
       TARBALL="${PKG_NAME}_${PKG_VERSION}.tar.gz"
-      Rscript -e "install.packages('${TARBALL}', lib=Sys.getenv('R_LIBS_USER'), repos=NULL, type='source')"
-    # check the newly installed tarball
-    - R CMD check "${TARBALL}" --no-manual
+      echo "Installing ${TARBALL} to custom library..."
+      Rscript -e "install.packages('${TARBALL}', lib='/ssu/bsssu/conda_envs_bsssu/flanders_r_2.0/lib/R/library/', repos=NULL, type='source')"
+    - |
+      echo "Checking built package ${TARBALL}..."
+      R CMD check "${TARBALL}" --no-manual
 
 check-job:
   stage: check
   before_script:
-    - *before_script_conda
+    - *before_script_bioc
   script:
-    # final sanity‐check
     - R CMD check ./ --no-manual
