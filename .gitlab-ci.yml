@@ -1,33 +1,46 @@
 # use the tidyverse rocker image, as it contains devtools preinstalled
 image: rocker/tidyverse
 
-# define stages of runner. at the moment,
-# just test (no build or deploy).
 stages:
   - test
   - build
   - check
 
-# define test job
+# helper snippet to install Bioc packages
+.before_script_bioc: &before_script_bioc |
+  Rscript -e " \
+    pkgs <- c('coloc','susieR','anndata'); \
+    install.packages(pkgs, repos='https://cloud.r-project.org'); \
+    if (!requireNamespace('BiocManager', quietly=TRUE)) \
+      install.packages('BiocManager', repos='https://cloud.r-project.org'); \
+    BiocManager::install(c('SingleCellExperiment','zellkonverter','scRNAseq'), ask=FALSE, update=FALSE) \
+  "
+
 test-job:
   stage: test
+  before_script:
+    - *before_script_bioc
   script:
-    # Install coloc, susieR and anndata dependencies
-    - Rscript -e "install.packages(c('coloc', 'susieR', 'anndata'))"
-    # run the R CMD check on the package (this path)
+    # run the R CMD check on the package
     - R CMD check ./ --no-manual
-    # run the devtools test
-    - R -e 'devtools::test()'
+    # run the devtools tests
+    - Rscript -e "devtools::test()"
 
 build-job:
   stage: build
+  before_script:
+    - *before_script_bioc
   script:
-    # Install coloc, susieR and anndata dependencies
-    - Rscript -e "install.packages(c('coloc', 'susieR', 'anndata'))"
-    # install
-    - R -e "roxygen2::roxygenise()"
+    - Rscript -e "roxygen2::roxygenise()"
     - R CMD build ./
     - |
-      PKG_VERSION=$(grep -i ^version DESCRIPTION | cut -d : -d \  -f 2)
-      PKG_NAME=$(grep -i ^package DESCRIPTION | cut -d : -d \  -f 2)
+      PKG_VERSION=$(grep -i ^Version DESCRIPTION | cut -d ':' -f2 | tr -d ' ')
+      PKG_NAME=$(grep -i ^Package DESCRIPTION | cut -d ':' -f2 | tr -d ' ')
       R CMD check ${PKG_NAME}_${PKG_VERSION}.tar.gz --no-manual
+
+check-job:
+  stage: check
+  before_script:
+    - *before_script_bioc
+  script:
+    - R CMD check ./ --no-manual
