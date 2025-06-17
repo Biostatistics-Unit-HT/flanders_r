@@ -55,7 +55,7 @@ This guide installs all dependencies from CRAN and Bioconductor for a straightfo
 
 For a more reproducible environment or if you need to interface with Python’s AnnData via reticulate, you can set up a Conda environment as follows:
 ```bash
-mamba create -p <your_folder_with_conda_envs>/flanders_r \
+mamba create -p /ssu/bsssu/conda_envs_bsssu/flanders_r_2.0 \
   -c conda-forge -c bioconda -c R \
   r-base=4.4 \
   bioconductor-singlecellexperiment=1.28.0 \
@@ -67,7 +67,10 @@ mamba create -p <your_folder_with_conda_envs>/flanders_r \
   r-dplyr=1.1.4 \
   r-anndata=0.7.5.6 \
   r-matrix=1.7_3 \
-  r-optparse=1.7.5
+  r-optparse=1.7.5 \
+  r-roxygen2=7.3.2 \
+  r-igraph=2.0.7 \
+  r-qgraph=1.9.8
 
 conda activate <your_folder_with_conda_envs>/flanders_r
 git clone git@github.com:Biostatistics-Unit-HT/flanders_r.git
