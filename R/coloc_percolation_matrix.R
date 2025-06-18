@@ -30,6 +30,7 @@
 #'}
 #'.    \item{ abf.list }{list with vector of lABF per final community}
 #'     \item{ coloc.matrix }{ adiacency matrix of colocalising credible sets (usefull for downstream plotting)}
+#'     \item { post_cp_tmp_module }{ data.frame with cs_name and random string, temporary module name}
 #' }
 #' @export
 #'
@@ -87,15 +88,24 @@ coloc_percolation_matrix <- function(finemap.data = cs.data,
     fin.abf.list=extract.abf.list.matrix(data=finemap.data,clique.list =cl.list )
 
     returned_object <- c(results_unweighted,list( method = "coloc"))
-    returned_object=list(cp.object=returned_object,abf.list=fin.abf.list,coloc.matrix=coloc.matrix)
+    returned_object=list(
+      cp.object=returned_object,
+      abf.list=fin.abf.list,
+      coloc.matrix=coloc.matrix)
 
+    # Add to object also list of cs with random string module label
+    returned_object$post_cp_tmp_module <- assign_post_cp_tmp_module_names(returned_object, trait.list)
     return(returned_object)
 
   } else {
     print("Only one clique detected")
     joint.finemapping=list(rowSums(finemap.data))
-    returned_object=list(cp.object=NULL,abf.list=joint.finemapping,coloc.matrix=coloc.matrix)
-    
+    returned_object=list(
+      cp.object=NULL,
+      abf.list=joint.finemapping,
+      coloc.matrix=coloc.matrix)
+    # Add to object also list of cs with random string module label
+    returned_object$post_cp_tmp_module <- assign_post_cp_tmp_module_names(returned_object, trait.list)
     return(returned_object)
   }
 }
