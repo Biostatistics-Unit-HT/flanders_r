@@ -11,7 +11,7 @@
 #'
 #' @return A `data.frame` with at least two columns:
 #' \describe{
-#'   \item{cs}{Original community structure or trait information.}
+#'   \item{cs_name}{Original community structure or trait information.}
 #'   \item{module}{Random 30-character alphanumeric module identifier.}
 #' }
 #'
@@ -23,7 +23,7 @@ assign_post_cp_tmp_module_names <- function(groups, traits){
   if(length(groups$cp.object$list.of.communities.labels)>0){
     for(j in 1:length(groups$cp.object$list.of.communities.labels)){
       tmp <- data.frame(
-        cs = groups$cp.object$list.of.communities.labels[[j]],
+        cs_name = groups$cp.object$list.of.communities.labels[[j]],
         module = stringi::stri_rand_strings(n=1, length=30, pattern="[A-Za-z0-9]")
       )
       all_modules <- rbind(all_modules, tmp)
