@@ -19,6 +19,7 @@
 #'   \item{best.snp.info}{A data.frame with the best SNP, its beta, and se.}
 #'
 #' @examples
+#' \dontrun {
 #' library(SingleCellExperiment)
 #' library(data.table)
 #' library(zellkonverter)
@@ -52,7 +53,7 @@
 #'   )
 #'   names(metanalysis)[i] <- paste0("Module_", mod.num)
 #' }
-#'
+#' }
 #' @export
 
 cs_metanalysis <- function(
