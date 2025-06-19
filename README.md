@@ -36,6 +36,10 @@ install.packages("data.table")
 install.packages("dplyr")
 install.packages("Matrix")
 install.packages("optparse")
+install.packages("R.utils")
+install.packages("stringi")
+install.packages("qgraph")
+install.packages("igraph")
 
 # You need these Bioconductor packages:
 if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -69,8 +73,10 @@ mamba create -p /ssu/bsssu/conda_envs_bsssu/flanders_r_2.0 \
   r-matrix=1.7_3 \
   r-optparse=1.7.5 \
   r-roxygen2=7.3.2 \
-  r-igraph=2.0.7 \
-  r-qgraph=1.9.8
+  r-igraph=2.0.3 \
+  r-qgraph=1.9.8 \
+  r-r.utils=2.13.0 \
+  r-stringi
 
 conda activate <your_folder_with_conda_envs>/flanders_r
 git clone git@github.com:Biostatistics-Unit-HT/flanders_r.git
@@ -161,10 +167,19 @@ If you do not have an AnnData object yet:
 ```
 
 4. **Perform Colocalization Analysis**
-   ```r
-    coloc_results <- anndata2coloc(sce, coloc_input)
-    print(coloc_results)
-   ```
+```r
+   coloc_results <- anndata2coloc(sce, coloc_input)
+   print(coloc_results)
+```
+
+5. **Identify simple modules/group of co-regulated signals and create credible sets-wise master table**
+```r
+   library(igraph)
+
+   modules <- identify_simple_modules(coloc_results, pp.H4.threshold=0.75, check_connectivity=FALSE)
+   master_table <- create_master_table(ad, modules)
+   print(master_table)
+   ```   
 ---
 
 ## Function Reference
@@ -177,6 +192,12 @@ If you do not have an AnnData object yet:
 
 - **anndata2coloc**  
   Performs colocalization tests using the provided AnnData object and trait-pair table.
+
+- **identify_simple_modules**
+  Defines modules (communities) of colocalizing signals using a graph-based approach. Optionally, checks whether each module is fully connected.
+
+- **create_master_table**
+  Constructs a master table where each credible set has been assigned to a module
 
 ---
 
