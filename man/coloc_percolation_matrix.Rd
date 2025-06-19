@@ -34,6 +34,7 @@ A list object with the following elements:
 }
 .    \item{ abf.list }{list with vector of lABF per final community}
     \item{ coloc.matrix }{ adiacency matrix of colocalising credible sets (usefull for downstream plotting)}
+    \item { post_cp_tmp_module }{ data.frame with cs_name and random string, temporary module name}
 }
 }
 \description{

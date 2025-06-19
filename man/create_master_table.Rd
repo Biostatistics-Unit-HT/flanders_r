@@ -4,39 +4,58 @@
 \alias{create_master_table}
 \title{Create Master Table with Module Assignments}
 \usage{
-create_master_table(ad_or_sce, modules)
+create_master_table(
+  ad_or_sce,
+  simple_modules = NULL,
+  partially_connected_modules = NULL,
+  fully_connected_modules = NULL
+)
 }
 \arguments{
-\item{ad_or_sce}{Either a `SingleCellExperiment` object or a list mimicking an
-`anndata` object (must contain a named element `obs` with cell-level metadata).}
+\item{ad_or_sce}{Either a `SingleCellExperiment`  or an `anndata`-like object
+(must contain a named element `obs` with credible set-level metadata).}
 
-\item{modules}{A `data.table` containing columns `cs_name` and `module`, representing
-precomputed module assignments for a subset of cells or features.}
+\item{simple_modules}{A data.table or data.frame containing simple module assignments. 
+Must include a `cs_name` and `module` column. Optional.}
+
+\item{partially_connected_modules}{A data.table or data.frame with post-coloc percolation
+module assignments. Used when `simple_modules` is NULL. Must include `cs_name` and 
+string-based `module` values. Optional.}
+
+\item{fully_connected_modules}{A data.table or data.frame with numeric module assignments 
+for fully connected modules. Used when `simple_modules` is NULL. Optional.}
 }
 \value{
-A `data.table` combining the metadata from `ad_or_sce` with module
-  labels from `modules`. Any cells/features not assigned to a module will be
-  given unique module IDs starting from `max(modules$module) + 1`.
+A `data.table` combining credible set metadata with numeric module assignments. 
+        NA module values are replaced with unique numeric IDs.
 }
 \description{
 This function constructs a master table from either a `SingleCellExperiment`
-or `anndata`-like object, then joins it with a module assignment table.
-Any rows without an assigned module (i.e., `NA` values in the `module` column)
-are assigned new unique module IDs starting from the next available integer.
+or `anndata`-like object, then joins it with module assignment tables.
+The function supports either a single set of simple modules or a combination
+of post-coloc percolation and fully connected modules. Any rows without an
+assigned module (i.e., `NA` values in the `module` column) are assigned new
+unique module IDs starting from the next available integer.
 }
 \details{
-The function determines whether the input object is a `SingleCellExperiment`
-or an `anndata`-like list, then extracts metadata accordingly. It uses a
-`data.table` join on the `cs_name` column to merge module labels, and applies
-the `replace_nas_with_modules()` helper to handle unmatched rows.
+If `simple_modules` is provided, it is used directly. Otherwise, both 
+`partially_connected_modules` and `fully_connected_modules` must be provided. The function 
+will remap string module identifiers to numeric values to avoid overlap.
 }
 \examples{
 \dontrun{
-# Assuming `sce` is a SingleCellExperiment and `modules` a data.table
-result <- create_master_table(sce, modules)
+# Using SingleCellExperiment
+master_table <- create_master_table(
+  ad_or_sce = sce,
+  simple_modules = module_df
+)
 
-# Or with anndata-like list:
-result <- create_master_table(list(obs = my_df), modules)
+# Using anndata (converted to R list via reticulate)
+master_table <- create_master_table(
+  ad_or_sce = ad,
+  partially_connected_modules = pc_modules,
+  fully_connected_modules = fc_modules
+)
 }
 
 }

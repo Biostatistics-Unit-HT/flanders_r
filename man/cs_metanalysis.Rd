@@ -34,6 +34,7 @@ Performs a meta-analysis on a list of credible sets (CS) from an AnnData or Sing
 combining effect sizes and standard errors across studies or datasets.
 }
 \examples{
+\dontrun {
 library(SingleCellExperiment)
 library(data.table)
 library(zellkonverter)
@@ -67,5 +68,5 @@ for(i in 1:length(unique(master.table.meta$module))){
   )
   names(metanalysis)[i] <- paste0("Module_", mod.num)
 }
-
+}
 }
