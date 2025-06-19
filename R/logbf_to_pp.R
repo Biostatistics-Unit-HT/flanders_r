@@ -33,7 +33,7 @@
 #' @seealso
 #' \code{\link[coloc]{logsum}} (for the underlying numerically stable log-sum-exp calculation)
 #'
-#' @export
+#' @keywords internal
 #'
 logbf_to_pp <- function(bf=all.coloc.join$ABF.tot) {
   denom=coloc:::logsum(bf)

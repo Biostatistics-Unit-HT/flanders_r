@@ -43,7 +43,7 @@
 #' @seealso
 #' \code{\link{logbf_to_pp}} (for converting lABFs to posterior probabilities)
 #'
-#' @export
+#' @keywords internal
 #'
 icoloc.regularization <- function(cs.vector){
   cs.pip=logbf_to_pp(cs.vector)

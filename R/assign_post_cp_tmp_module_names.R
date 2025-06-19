@@ -15,7 +15,7 @@
 #' }
 #'
 #' @importFrom stringi stri_rand_strings
-#' @export
+#' @keywords internal
 #'
 assign_post_cp_tmp_module_names <- function(groups){
   all_modules <- list()

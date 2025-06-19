@@ -38,7 +38,7 @@
 #'
 #' @importFrom igraph graph_from_adjacency_matrix max_cliques
 #'
-#' @export
+#' @keywords internal
 #'
 unweighted <- function(W_unweighted){
 

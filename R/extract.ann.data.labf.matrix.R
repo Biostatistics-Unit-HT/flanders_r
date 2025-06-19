@@ -39,7 +39,7 @@
 #'
 #' @import zellkonverter SingleCellExperiment
 #'
-#' @export
+#' @keywords internal
 #'
 extract.ann.data.labf.matrix <- function(sce.obj=ann.data,
                                          cs.list=member.list){

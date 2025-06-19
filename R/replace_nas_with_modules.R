@@ -19,7 +19,7 @@
 #' df <- data.frame(cs_name = c("a", "b", "c"), module = c(1, NA, NA))
 #' replace_nas_with_modules(df, start_value = 100)
 #'
-#' @export
+#' @keywords internal
 #'
 replace_nas_with_modules <- function(master.table_w_modules, start_value=NULL) {
   na_indices <- which(is.na(master.table_w_modules[["module"]]))

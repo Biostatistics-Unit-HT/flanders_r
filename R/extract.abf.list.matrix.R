@@ -104,7 +104,7 @@
 #'                                              clique.list = wrapped_cp_output)
 #' print(abf_results_mimic)
 #'
-#' @export
+#' @keywords internal
 #'
 extract.abf.list.matrix <- function(data=finemap.data, clique.list=structure_level){
 

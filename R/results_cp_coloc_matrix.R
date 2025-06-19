@@ -78,7 +78,7 @@
 #' @importFrom qgraph qgraph getWmat
 #' @importFrom igraph graph_from_adjacency_matrix components
 #' @importFrom R.utils last # For last(structure_level)
-#' @export
+#' @keywords internal
 #'
 results_cp_coloc_matrix <- function(W=Wmat,
                                     cliques=cliques_unweighted,
