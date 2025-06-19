@@ -77,6 +77,7 @@
 #'
 #' @importFrom qgraph qgraph getWmat
 #' @importFrom igraph graph_from_adjacency_matrix components
+#' @importFrom data.table last # For last(structure_level)
 #' @keywords internal
 #'
 results_cp_coloc_matrix <- function(W=Wmat,
@@ -121,7 +122,7 @@ results_cp_coloc_matrix <- function(W=Wmat,
     }
   }
 
-  final.groups=last(structure_level)$clique.map
+  final.groups=data.table::last(structure_level)$clique.map
   if(level>1){
     for( livello in length(structure_level):2){
       for( i in 1:length(final.groups)){
