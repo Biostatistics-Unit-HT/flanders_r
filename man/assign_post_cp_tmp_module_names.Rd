@@ -15,7 +15,7 @@ which should be a list of community labels (e.g., vectors or data frames).}
 \value{
 A `data.frame` with at least two columns:
 \describe{
-  \item{cs}{Original community structure or trait information.}
+  \item{cs_name}{Original community structure or trait information.}
   \item{module}{Random 30-character alphanumeric module identifier.}
 }
 }
