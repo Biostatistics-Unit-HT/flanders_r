@@ -7,7 +7,7 @@ stages:
 # Bootstrap CRAN and Bioconductor dependencies
 .before_script_bioc: &before_script_bioc |
   Rscript -e " \
-    pkgs <- c('coloc','susieR','anndata'); \
+    pkgs <- c('coloc','susieR','anndata','R.utils','stringi','igraph','qgraph'); \
     install.packages(pkgs, repos='https://cloud.r-project.org'); \
     if (!requireNamespace('BiocManager', quietly=TRUE)) \
       install.packages('BiocManager', repos='https://cloud.r-project.org'); \
