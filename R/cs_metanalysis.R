@@ -19,7 +19,7 @@
 #'   \item{best.snp.info}{A data.frame with the best SNP, its beta, and se.}
 #'
 #' @examples
-#' \donotrun {
+#' \dontrun {
 #' library(SingleCellExperiment)
 #' library(data.table)
 #' library(zellkonverter)
