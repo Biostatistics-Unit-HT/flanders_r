@@ -17,15 +17,14 @@
 #'        for the current module instead of calling `extract.ann.data.labf.matrix()` internally.
 #'        This is recommended for batch fine-mapping across multiple modules to improve performance.
 #'
-#' @return A list with:
-#' \describe{
-#'   \item{most.likely.snp.info}{A data.frame with the top PIP SNP and its associated
-#'         beta and se across all CSs in the module.}
-#'   \item{cs.info}{A data.frame of SNPs in the 99% credible set, with their PIPs and joint lABFs.}
-#'   \item{mim.labf}{The minimum lABF among SNPs not in the 99% credible set.}
-#'   \item{sum.labf}{The log-sum of all lABFs (used to normalize posterior probabilities).}
+#' @return A list with the following components:
+#' \itemize{
+#'   \item most.likely.snp.info: A data.frame with the top PIP SNP and its associated beta and se across all CSs in the module.
+#'   \item cs.info: A data.frame of SNPs in the 99% credible set, with their PIPs and joint lABFs.
+#'   \item mim.labf: The minimum lABF among SNPs not in the 99% credible set.
+#'   \item sum.labf: The log-sum of all lABFs, used to normalize posterior probabilities.
 #' }
-#'
+#' 
 #' @details
 #' If `full_labf_matrix` is not provided, the function calls `extract.ann.data.labf.matrix()`
 #' on the current module’s CSs. To avoid redundant extraction in batch runs (e.g. across many modules),
