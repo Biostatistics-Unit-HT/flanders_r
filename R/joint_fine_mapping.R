@@ -19,11 +19,11 @@
 #'
 #' @return A list with:
 #' \describe{
-#'   \item{`most.likely.snp.info`}{A `data.frame` with the top PIP SNP and its associated
-#'         `beta` and `se` across all CSs in the module.}
-#'   \item{`cs.info`}{A `data.frame` of SNPs in the 99% credible set, with their PIPs and joint lABFs.}
-#'   \item{`mim.labf`}{The minimum lABF among SNPs not in the 99% credible set.}
-#'   \item{`sum.labf`}{The log-sum of all lABFs (used to normalize posterior probabilities).}
+#'   \item{most.likely.snp.info}{A data.frame with the top PIP SNP and its associated
+#'         beta and se across all CSs in the module.}
+#'   \item{cs.info}{A data.frame of SNPs in the 99% credible set, with their PIPs and joint lABFs.}
+#'   \item{mim.labf}{The minimum lABF among SNPs not in the 99% credible set.}
+#'   \item{sum.labf}{The log-sum of all lABFs (used to normalize posterior probabilities).}
 #' }
 #'
 #' @details
@@ -97,7 +97,7 @@ joint.finemapping = function(ann.data.obj,
   )
   
   mim.labf <- min(joint.fm[which(!(joint.fm%in%cs.99))],na.rm=T)
-  sum.labf <- coloc.peRculation:::logsum(joint.fm) 
+  sum.labf <- coloc:::logsum(joint.fm) 
   
   return(list(
     most.likely.snp.info = most.likely.snp.info,
