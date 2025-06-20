@@ -47,13 +47,19 @@
 #' @importFrom data.table data.table
 #' @export
 #' 
-joint.finemapping = function(ann.data.obj=ann.data,
-                           module.master.table=NULL){
+joint.finemapping = function(ann.data.obj,
+                             module.master.table,
+                             full_labf_matrix = NULL){
   
-  
-  abf.matrix <- extract.ann.data.labf.matrix(
-    sce.obj = ann.data.obj,
-    cs.list = module.master.table$cs_name)
+  # Subset the full_labf_matrix to the cs_names for this module
+  if (is.null(full_labf_matrix)) {
+    abf.matrix <- extract.ann.data.labf.matrix(
+      sce.obj = ann.data.obj,
+      cs.list = module.master.table$cs_name
+    )
+  } else {
+    abf.matrix <- full_labf_matrix[, module.master.table$cs_name, drop = FALSE]
+  }
   
   joint.fm <- rowSums(abf.matrix)
   PIP <- logbf_to_pp(joint.fm)
