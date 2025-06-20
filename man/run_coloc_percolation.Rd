@@ -7,25 +7,39 @@
 run_coloc_percolation(traits, ad, pp.H4.threshold = 0.5, icoloc.reg = TRUE)
 }
 \arguments{
-\item{traits}{A data frame or tibble containing at least `module` and `cs_name` columns.}
+\item{traits}{A `data.frame` or `tibble` containing at least the columns `module` and `cs_name`.
+Each row defines a credible set and its assigned module.}
 
-\item{ad}{A `SingleCellExperiment` object containing annotation and assay data.}
+\item{ad}{A `SingleCellExperiment` object containing credible set-level annotations,
+and assays including `X` (lABF), `beta`, and `se`.}
 
-\item{pp.H4.threshold}{Numeric threshold for colocalization (default = 0.5).}
+\item{pp.H4.threshold}{Numeric threshold for considering colocalization via posterior probability H4.
+Default is 0.5.}
 
-\item{icoloc.reg}{Logical indicating whether to apply coloc regional filter (default = TRUE).}
+\item{icoloc.reg}{Logical flag indicating whether to apply coloc regional regularization to each
+ABF vector. Default is TRUE.}
 }
 \value{
-A list of coloc percolation results, one per module.
+A list of coloc percolation result objects, one per module. Each includes a colocalization
+        matrix, detected cliques, assigned trait groups, and ABF submatrices.
 }
 \description{
-This function groups traits by a `module` column and, for each group, extracts
-the corresponding credible sets from annData/SCE object and runs coloc
-percolation using a liberal `pp.H4.threshold` value.
+Groups traits by a `module` column and runs colocalization percolation for each group.
+Internally, the function first extracts log-approximated Bayes factors (lABFs) for all
+credible sets across all modules from the input `SingleCellExperiment` object (`ad`),
+and then subsets the matrix per group. This avoids redundant data extraction in loops.
+
+For each module, the corresponding lABF subset is passed to `coloc_percolation_matrix()`,
+which constructs pairwise coloc matrices, applies optional regional regularization, and
+identifies colocalization cliques.
 }
 \examples{
 \dontrun{
-results <- run_coloc_percolation(traits, ad)
+results <- run_coloc_percolation(traits = trait_table, ad = ann_data)
+results[[1]]$coloc.matrix
 }
 
+}
+\seealso{
+\code{\link{coloc_percolation_matrix}}, \code{\link{extract.ann.data.labf.matrix}}
 }

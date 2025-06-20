@@ -4,44 +4,63 @@
 \alias{joint.finemapping}
 \title{Joint Fine-Mapping Across a Module of Credible Sets}
 \usage{
-joint.finemapping(ann.data.obj = ann.data, module.master.table = NULL)
+joint.finemapping(ann.data.obj, module.master.table, full_labf_matrix = NULL)
 }
 \arguments{
-\item{ann.data.obj}{A `SingleCellExperiment` or similar annotated data object
-containing SNP-level lABFs (`X` assay), effect sizes (`beta` assay),
-and standard errors (`se` assay).}
+\item{ann.data.obj}{A `SingleCellExperiment` or similar object containing SNP-level assays,
+including `X` (lABFs), `beta` (effect sizes), and `se` (standard errors).}
 
-\item{module.master.table}{A data.frame or data.table containing credible sets
-(CSs) for a given module. Must include a `cs_name` column that matches
-column names in `ann.data.obj`.}
+\item{module.master.table}{A `data.frame` or `data.table` containing credible sets for
+a single module. Must include a `cs_name` column with names matching columns
+in `ann.data.obj`.}
+
+\item{full_labf_matrix}{(Optional) A precomputed matrix of lABFs across all CSs
+(columns = CSs, rows = SNPs). If provided, the function will subset this matrix
+for the current module instead of calling `extract.ann.data.labf.matrix()` internally.
+This is recommended for batch fine-mapping across multiple modules to improve performance.}
 }
 \value{
-
+A list with the following components:
+\itemize{
+  \item most.likely.snp.info: A data.frame with the top PIP SNP and its associated beta and se across all CSs in the module.
+  \item cs.info: A data.frame of SNPs in the 99% credible set, with their PIPs and joint lABFs.
+  \item mim.labf: The minimum lABF among SNPs not in the 99% credible set.
+  \item sum.labf: The log-sum of all lABFs, used to normalize posterior probabilities.
+}
 }
 \description{
-This function performs joint fine-mapping across a group of credible sets (CSs) 
-defined in a module. It aggregates log-approximated Bayes factors (lABFs) across 
-all CSs, computes posterior inclusion probabilities (PIPs), and determines the 
-99% credible set based on cumulative PIP.
+Performs joint fine-mapping across a group of credible sets (CSs) within a module.
+Aggregates log-approximated Bayes factors (lABFs) across CSs, computes posterior inclusion
+probabilities (PIPs), and identifies a 99% credible set based on cumulative PIP.
 }
 \details{
-This function first extracts the lABF matrix across all CSs in a given module using
-`extract.ann.data.labf.matrix()`. It then computes joint evidence for each SNP by summing
-lABFs across CSs. The SNPs are ranked by PIP and a 99% credible set is identified.
+If `full_labf_matrix` is not provided, the function calls `extract.ann.data.labf.matrix()`
+on the current module’s CSs. To avoid redundant extraction in batch runs (e.g. across many modules),
+pass in `full_labf_matrix` and let the function subset the relevant CSs internally.
 
-The most likely causal SNP (i.e., top-ranked by PIP) is also returned with its associated
-effect sizes and standard errors across CSs in the module.
+The top-ranked SNP by PIP is used to extract effect sizes and standard errors from the `beta`
+and `se` assays of `ann.data.obj`.
 }
 \examples{
 \dontrun{
+# Run fine-mapping on module 3
 results <- joint.finemapping(
   ann.data.obj = ann.data,
   module.master.table = master_table[module == 3]
 )
-results$cs.info
+
+# Provide precomputed matrix for efficiency
+labf_mat <- extract.ann.data.labf.matrix(ann.data, master_table$cs_name)
+results <- joint.finemapping(
+  ann.data.obj = ann.data,
+  module.master.table = master_table[module == 3],
+  full_labf_matrix = labf_mat
+)
 }
 
 }
 \seealso{
-\code{\link{extract.ann.data.labf.matrix}}, \code{\link{logbf_to_pp}}, \code{\link[coloc.peRculation]{logsum}}
+\code{\link{extract.ann.data.labf.matrix}}, 
+\code{\link{logbf_to_pp}}, 
+\code{\link[coloc]{logsum}}
 }

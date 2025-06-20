@@ -2,35 +2,54 @@
 % Please edit documentation in R/run_joint_finemapping.R
 \name{run_joint_finemapping}
 \alias{run_joint_finemapping}
-\title{Run Joint Fine-Mapping for All Modules}
+\title{Run Joint Fine-Mapping and Aggregate Results}
 \usage{
 run_joint_finemapping(ann.data.obj, module.master.table)
 }
 \arguments{
-\item{ann.data.obj}{A `SingleCellExperiment` or similar object containing credible set-level
-annotations and assays including `X`, `beta`, and `se`.}
+\item{ann.data.obj}{A `SingleCellExperiment` or compatible object containing SNP-level assays
+including `X` (lABF), `beta`, and `se`. Must contain column names matching `cs_name` values.}
 
-\item{module.master.table}{A data.table or data.frame containing `cs_name` and `module` columns.}
+\item{module.master.table}{A `data.table` or `data.frame` with at least `cs_name` and `module` columns,
+where each row corresponds to a credible set (CS) and its assigned module.}
 }
 \value{
-A named list of results from `joint.finemapping()` for each module.
+A named list with:
+\describe{
+  \item{`master.table`}{The original `module.master.table` merged with results from 
+  `most.likely.snp.info`, including the most likely SNP, `most_likely_beta`, and `most_likely_se`.}
+
+  \item{`joint.lABF.matrix`}{A sparse matrix of joint lABF values. Rows correspond to `cs_name`s,
+  and columns to SNPs. Each `cs_name` inherits the lABF profile of its module.}
+}
 }
 \description{
-This function applies joint fine-mapping (`joint.finemapping`) to each module
-defined in a `module.master.table`, and returns results for all modules.
+Applies joint fine-mapping (`joint.finemapping`) to each module defined in `module.master.table`.
+This function extracts log-approximated Bayes factors (`lABFs`) once from the annotation object, 
+then applies `joint.finemapping()` to each module. The results include merged SNP-level outputs 
+and a sparse matrix summarizing joint evidence across modules.
+}
+\details{
+The function avoids redundant computation by extracting the full lABF matrix (`X` assay) once
+using `extract.ann.data.labf.matrix()`, and subsetting it inside `joint.finemapping()` for each module.
+
+The final sparse matrix duplicates lABF profiles across all `cs_name`s in the same module.
 }
 \examples{
 \dontrun{
-joint.results <- run_joint_finemapping_all_modules(
-  ann.data.obj = ann.data,
+results <- run_joint_finemapping(
+  ann.data.obj = ann_data,
   module.master.table = master_table
 )
 
-# View most likely SNPs for module 1
-joint.results[["1"]]$most.likely.snp.info
+# Access updated master table
+head(results$master.table)
+
+# Access sparse matrix of lABFs
+results$joint.lABF.matrix
 }
 
 }
 \seealso{
-\code{\link{joint.finemapping}}
+\code{\link{joint.finemapping}}, \code{\link{extract.ann.data.labf.matrix}}
 }
