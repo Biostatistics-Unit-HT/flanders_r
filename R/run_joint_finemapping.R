@@ -2,21 +2,30 @@
 #'
 #' @description
 #' Applies joint fine-mapping (`joint.finemapping`) to each module defined in `module.master.table`.
-#' The function merges most likely SNP information back into the input table, and constructs a sparse matrix
-#' of joint log10 Bayes Factors (`lABF`) for all credible sets across modules.
+#' This function extracts log-approximated Bayes factors (`lABFs`) once from the annotation object, 
+#' then applies `joint.finemapping()` to each module. The results include merged SNP-level outputs 
+#' and a sparse matrix summarizing joint evidence across modules.
 #'
-#' @param ann.data.obj A `SingleCellExperiment` or similar object containing credible set-level
-#'        annotations and assays, including `X`, `beta`, and `se`.
-#' @param module.master.table A `data.table` or `data.frame` with at least `cs_name` and `module` columns.
-#'        Each row corresponds to a credible set and its module assignment.
+#' @param ann.data.obj A `SingleCellExperiment` or compatible object containing SNP-level assays
+#'        including `X` (lABF), `beta`, and `se`. Must contain column names matching `cs_name` values.
+#'
+#' @param module.master.table A `data.table` or `data.frame` with at least `cs_name` and `module` columns,
+#'        where each row corresponds to a credible set (CS) and its assigned module.
 #'
 #' @return A named list with:
 #' \describe{
-#'   \item{`master.table`}{The original `module.master.table` with additional columns from
-#'   `most.likely.snp.info`, including `most_likely_beta` and `most_likely_se`.}
-#'   \item{`joint.lABF.matrix`}{A sparse matrix of joint lABF values, with rows = `cs_name`s and
-#'   columns = SNPs. Each `cs_name` receives the lABF profile of its module.}
+#'   \item{`master.table`}{The original `module.master.table` merged with results from 
+#'   `most.likely.snp.info`, including the most likely SNP, `most_likely_beta`, and `most_likely_se`.}
+#'
+#'   \item{`joint.lABF.matrix`}{A sparse matrix of joint lABF values. Rows correspond to `cs_name`s,
+#'   and columns to SNPs. Each `cs_name` inherits the lABF profile of its module.}
 #' }
+#'
+#' @details
+#' The function avoids redundant computation by extracting the full lABF matrix (`X` assay) once
+#' using `extract.ann.data.labf.matrix()`, and subsetting it inside `joint.finemapping()` for each module.
+#'
+#' The final sparse matrix duplicates lABF profiles across all `cs_name`s in the same module.
 #'
 #' @examples
 #' \dontrun{
@@ -25,16 +34,16 @@
 #'   module.master.table = master_table
 #' )
 #'
-#' # Updated master table with most likely SNPs
+#' # Access updated master table
 #' head(results$master.table)
 #'
-#' # Access sparse lABF matrix
-#' sparse_mat <- results$joint.lABF.matrix
+#' # Access sparse matrix of lABFs
+#' results$joint.lABF.matrix
 #' }
 #'
-#' @seealso \code{\link{joint.finemapping}}
-#' 
-#' @importFrom data.table as.data.table setnames rbindlist
+#' @seealso \code{\link{joint.finemapping}}, \code{\link{extract.ann.data.labf.matrix}}
+#'
+#' @importFrom data.table as.data.table setnames rbindlist merge
 #' @importFrom Matrix sparseMatrix
 #'
 #' @export
@@ -122,6 +131,3 @@ run_joint_finemapping <- function(
     joint.lABF.matrix = sparse_mat
   ))
 }
-
-
-### WOULD IT BE BETTER TO DO THE EXTRACTION FROM ANNDATA OUTSIDE OF THE LOOP? ALSO FOR RUN_COLOC_PERCOLATION
