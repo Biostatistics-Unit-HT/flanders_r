@@ -37,7 +37,7 @@
 #' @seealso 
 #' \code{\link{extract.ann.data.labf.matrix}}, 
 #' \code{\link{logbf_to_pp}}, 
-#' \code{\link[coloc.peRculation]{logsum}}
+#' \code{\link[coloc]{logsum}}
 #'
 #' @examples
 #' \dontrun{
