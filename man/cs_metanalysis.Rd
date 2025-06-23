@@ -37,7 +37,7 @@ Performs a meta-analysis on a list of credible sets (CS) from an `AnnData` or
 across studies or datasets.
 }
 \examples{
-\dontrun{
+\dontrun {
 library(SingleCellExperiment)
 library(data.table)
 library(zellkonverter)
@@ -74,5 +74,4 @@ for (i in seq_along(unique(master.table.meta$module))) {
   names(metanalysis)[i] <- paste0("Module_", mod.num)
 }
 }
-
 }
