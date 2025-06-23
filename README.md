@@ -210,7 +210,46 @@ If you do not have an AnnData object yet:
    joint_finemapping_obj$master_table # Access master table with modules, most likely SNP from joint fine-mapping
    joint_finemapping_obj$joint.lABF.matrix # Access sparse matrix collecting joint fine-mapping lABFs (per credible set and SNP)
 
-   ```     
+   ``` 
+   
+       
+
+## Quick Start
+
+### Scenario 3: Meta-analysis across multiple populations
+
+Once you have an AnnData object with fine-mapping results for several cohorts, you can run a cross-population meta-analysis of credible sets using `meta_analysis_per_trait()`:
+
+```r
+library(SingleCellExperiment)
+library(zellkonverter)
+library(data.table)      # for fread()
+library(flanders)
+
+# 1. Load your merged AnnData object
+ann.data <- readH5AD(
+  file   = "/ssu/bsssu/anndata_finemapping_repository/cardinal_UKBB_europeans_ELGH_pakistani_cis_finemapping_full_FLIP_FIXED_20250611.h5ad",
+  verbose = TRUE,
+  reader  = "R"
+)
+
+# 2. Read your colocalization results table
+coloc_res <- fread(
+  "/ssu/bsssu/cardinal_finemap_coloc/anndata/anndata_020525_coloc/results/cardinal_UKBB_europeans_ELGH_pakistani_colocalization_table_all_merged.txt"
+)
+
+# 3. Run meta‐analysis per trait across populations
+full_meta_res <- meta_analysis_per_trait(
+  ad_or_sce = ann.data,
+  coloc_res = coloc_res
+)
+
+# Inspect the output
+print(full_meta_res)
+```
+
+This will return a data.frame of meta-analysed credible‐set results (one row per trait), combining evidence across your cohorts. You can then use these summaries for downstream interpretation or visualization.
+
 ---
 
 ## Function Reference
