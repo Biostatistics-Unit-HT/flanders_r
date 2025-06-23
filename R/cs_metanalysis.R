@@ -1,25 +1,28 @@
-#' Meta-analysis of credible sets from single-cell data
+#' Meta-analysis of Credible Sets from Single-cell Data
 #'
-#' Performs a meta-analysis on a list of credible sets (CS) from an AnnData or SingleCellExperiment object,
-#' combining effect sizes and standard errors across studies or datasets.
+#' Performs a meta-analysis on a list of credible sets (CS) from an `AnnData` or
+#' `SingleCellExperiment` object, combining effect sizes and standard errors
+#' across studies or datasets.
 #'
-#' @param ad_or_sce An AnnData or SingleCellExperiment object containing summary statistics.
+#' @param ad_or_sce An `AnnData` or `SingleCellExperiment` object containing summary statistics.
 #' @param cs.list A character vector of credible set names to include in the meta-analysis.
-#' @param coverage Numeric, the cumulative posterior probability coverage threshold (default: 0.99).
+#' @param coverage Numeric. The cumulative posterior probability coverage threshold (default: 0.99).
 #'
 #' @return A list containing:
+#' \describe{
 #'   \item{cs.name}{A string with the meta-analysis credible set name.}
-#'   \item{meta.results}{A data.frame with SNPID, meta-analyzed beta, se, logp, labf, and PPI.}
+#'   \item{meta.results}{A data.frame with SNPID, meta-analyzed beta, SE, logp, lABF, and PPI.}
 #'   \item{min.abf}{Minimum approximate Bayes factor in the credible set.}
 #'   \item{start}{Start coordinate of the region.}
 #'   \item{end}{End coordinate of the region.}
 #'   \item{chr}{Chromosome of the region.}
 #'   \item{coverage}{Sum of PPI for the credible set.}
 #'   \item{logsum}{Sum of log Bayes factors for the credible set.}
-#'   \item{best.snp.info}{A data.frame with the best SNP, its beta, and se.}
+#'   \item{best.snp.info}{A data.frame with the best SNP, its beta, and SE.}
+#' }
 #'
 #' @examples
-#' \dontrun {
+#' \dontrun{
 #' library(SingleCellExperiment)
 #' library(data.table)
 #' library(zellkonverter)
@@ -33,8 +36,9 @@
 #'
 #' coloc_res <- fread("/ssu/bsssu/cardinal_finemap_coloc/anndata/anndata_020525_coloc/results/cardinal_UKBB_europeans_ELGH_pakistani_colocalization_table_all_merged.txt")
 #'
-#' # Select coloc results for same traits and different studies with high posterior probability of colocalization
-#' coloc_res_to_MA <- coloc_res %>% filter(t1==t2 & t1_study_id != t2_study_id & PP.H4.abf >= 0.75)
+#' # Select coloc results for same traits and different studies with high posterior probability
+#' coloc_res_to_MA <- coloc_res %>%
+#'   filter(t1 == t2 & t1_study_id != t2_study_id & PP.H4.abf >= 0.75)
 #'
 #' cs.metanalysis(
 #'   ann.data,
@@ -44,8 +48,9 @@
 #'   )
 #' )
 #'
+#' # Loop over modules
 #' metanalysis <- list()
-#' for(i in 1:length(unique(master.table.meta$module))){
+#' for (i in seq_along(unique(master.table.meta$module))) {
 #'   mod.num <- unique(master.table.meta$module)[i]
 #'   metanalysis[[i]] <- cs.metanalysis(
 #'     ann.data,
@@ -53,9 +58,10 @@
 #'   )
 #'   names(metanalysis)[i] <- paste0("Module_", mod.num)
 #' }
-#'}
+#' }
+#'
 #' @export
-
+#' 
 cs_metanalysis <- function(
   ad_or_sce = ann.data,
   cs.list = master.table.meta$cs_name[master.table.meta$module==1],

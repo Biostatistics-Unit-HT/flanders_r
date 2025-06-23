@@ -2,45 +2,38 @@
 % Please edit documentation in R/extract.ann.data.labf.matrix.R
 \name{extract.ann.data.labf.matrix}
 \alias{extract.ann.data.labf.matrix}
-\title{Extract and Process lABF Matrix from Annotated Data}
+\title{Extract and Process lABF Matrix from Annotated Data Across Chromosomes}
 \usage{
 extract.ann.data.labf.matrix(sce.obj = ann.data, cs.list = member.list)
 }
 \arguments{
-\item{sce.obj}{= SingleCellExperiment object containing the CS information}
+\item{sce.obj}{A `SingleCellExperiment` object containing SNP annotations and assay data.}
 
-\item{cs.list}{= vector with names of the credible sets to be extracted}
+\item{cs.list}{A character vector of credible set names (column names in `sce.obj`) to extract.}
 }
 \value{
-matrix with lABFs values. Columns are credible sets IDs while rows are SNPs.
+A matrix of lABF values, where columns represent credible sets and rows represent SNPs. 
+        SNPs across multiple chromosomes are supported, and the matrix is padded with `NA` 
+        where certain credible sets do not appear on a given chromosome.
 }
 \description{
 This function extracts a matrix of log-approximated Bayes factors (lABFs)
 from a `SingleCellExperiment` (SCE) object, specifically for a set of
-credible sets (CSs) provided in `cs.list`. It filters the SCE object
-to include only SNPs within the genomic boundaries covered by these CSs
-and then imputes any zero lABF values for non-colocalizing SNPs with a
-predefined minimum residual lABF from the SCE object's metadata.
+credible sets (CSs) provided in `cs.list`. It supports multiple chromosomes
+by processing each chromosome separately and then combining the results.
+For each CS, any zero lABF values are replaced by the column-specific
+`min_res_labf` to ensure imputed background signal.
 }
 \details{
 The function performs the following steps:
 \enumerate{
-  \item **Subset by Credible Sets:** The `sce.obj` is initially subsetted to
-    include only the columns (credible sets) specified in `cs.list`.
-  \item **Define Genomic Boundaries:** It then determines the minimum 'start'
-    and maximum 'end' genomic positions from the subsetted `sce.obj` to define
-    a comprehensive genomic region of interest. The chromosome is also identified.
-  \item **Filter SNPs:** SNPs (rows) in the `sce.obj` are filtered to retain
-    only those that fall within the determined chromosome and genomic boundaries.
-  \item **Extract lABF Matrix:** The lABF values are extracted from the 'X'
-    assay of the filtered `sce.obj` and converted into a standard matrix,
-    ensuring correct row and column names (SNP IDs and credible set names).
-  \item **Impute Zero lABFs:** For each column (credible set) in the
-    extracted lABF matrix, any lABF values that are exactly `0` are replaced
-    with the corresponding `min_res_labf` value from the `sce.obj`'s column
-    metadata for that specific credible set. This imputation step is crucial
-    for downstream colocalization analyses, as it provides a background
-    lABF for SNPs that do not show evidence of association.
+  \item **Subset by Credible Sets:** Filters the `sce.obj` to include only the credible sets specified in `cs.list`.
+  \item **Loop Over Chromosomes:** Iterates over each chromosome present in the subset.
+  \item **Define Genomic Boundaries per Chromosome:** For each chromosome, defines boundaries using the min `start` and max `end` positions.
+  \item **Filter SNPs Within Bounds:** Filters rows (SNPs) to retain those within the chromosome-specific genomic region.
+  \item **Extract and Modify Matrix:** Extracts the lABF matrix from the 'X' assay. For each CS, replaces `0` values with `min_res_labf`.
+  \item **Column Alignment Across Chromosomes:** Ensures all matrices have the same set of columns by padding with `NA` where needed.
+  \item **Combine Results:** Row-binds the per-chromosome matrices into a single output matrix.
 }
 }
 \seealso{

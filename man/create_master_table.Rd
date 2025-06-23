@@ -7,7 +7,7 @@
 create_master_table(
   ad_or_sce,
   simple_modules = NULL,
-  partially_connected_modules = NULL,
+  post_cp_list = NULL,
   fully_connected_modules = NULL
 )
 }
@@ -18,12 +18,11 @@ create_master_table(
 \item{simple_modules}{A data.table or data.frame containing simple module assignments. 
 Must include a `cs_name` and `module` column. Optional.}
 
-\item{partially_connected_modules}{A data.table or data.frame with post-coloc percolation
-module assignments. Used when `simple_modules` is NULL. Must include `cs_name` and 
-string-based `module` values. Optional.}
+\item{post_cp_list}{A **list** object where each element contains `post_cp_tmp_module`
+(e.g., output from `run_coloc_percolation()`). Optional.}
 
 \item{fully_connected_modules}{A data.table or data.frame with numeric module assignments 
-for fully connected modules. Used when `simple_modules` is NULL. Optional.}
+for fully connected modules. Optional.}
 }
 \value{
 A `data.table` combining credible set metadata with numeric module assignments. 
@@ -32,14 +31,16 @@ A `data.table` combining credible set metadata with numeric module assignments.
 \description{
 This function constructs a master table from either a `SingleCellExperiment`
 or `anndata`-like object, then joins it with module assignment tables.
-The function supports either a single set of simple modules or a combination
-of post-coloc percolation and fully connected modules. Any rows without an
+It supports either a single set of simple modules or a combination
+of post-coloc percolation and fully connected modules. When the output
+list of `run_coloc_percolation` is provided, the `post_cp_tmp_module`
+table is extracted from each element. In addition, any rows without an
 assigned module (i.e., `NA` values in the `module` column) are assigned new
 unique module IDs starting from the next available integer.
 }
 \details{
 If `simple_modules` is provided, it is used directly. Otherwise, both 
-`partially_connected_modules` and `fully_connected_modules` must be provided. The function 
+`post_cp_list` and `fully_connected_modules` must be provided. The function 
 will remap string module identifiers to numeric values to avoid overlap.
 }
 \examples{
@@ -53,7 +54,7 @@ master_table <- create_master_table(
 # Using anndata (converted to R list via reticulate)
 master_table <- create_master_table(
   ad_or_sce = ad,
-  partially_connected_modules = pc_modules,
+  post_cp_list = coloc_percolation_groups,
   fully_connected_modules = fc_modules
 )
 }

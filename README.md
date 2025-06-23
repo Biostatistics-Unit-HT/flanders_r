@@ -177,9 +177,40 @@ If you do not have an AnnData object yet:
    library(igraph)
 
    modules <- identify_simple_modules(coloc_results, pp.H4.threshold=0.75, check_connectivity=FALSE)
-   master_table <- create_master_table(ad, modules)
+   master_table <- create_master_table(ad, simple_modules=modules)
    print(master_table)
-   ```   
+   ```  
+
+6. **Identify modules/group of co-regulated signals, use coloc percolation to dientagloe the most comple ones, create credible sets-wise master table and perform joint fine-mapping**
+```r
+   library(igraph)
+   library(qgraph)
+   library(stringi)
+
+   # Identify fully connected and partially connected modules
+   modules <- identify_simple_modules(coloc_results, pp.H4.threshold=0.75, check_connectivity=TRUE)
+   
+   # Run partially connected module through coloc percolation to refine them
+   groups <- run_coloc_percolation(
+     modules$partly_connected_modules,
+     ad,
+     pp.H4.threshold=0.75,
+     icoloc.reg=TRUE)
+
+   # Create master table
+   master_table <- create_master_table(
+     ad,
+     post_cp_list = groups,
+     fully_connected_modules = modules$fully_connected_modules
+  )
+
+   # Perform joint fine-mapping
+   joint_finemapping_obj <- run_joint_finemapping(ad, master_table)
+
+   joint_finemapping_obj$master_table # Access master table with modules, most likely SNP from joint fine-mapping
+   joint_finemapping_obj$joint.lABF.matrix # Access sparse matrix collecting joint fine-mapping lABFs (per credible set and SNP)
+
+   ```     
 ---
 
 ## Function Reference
@@ -197,7 +228,13 @@ If you do not have an AnnData object yet:
   Defines modules (communities) of colocalizing signals using a graph-based approach. Optionally, checks whether each module is fully connected.
 
 - **create_master_table**
-  Constructs a master table where each credible set has been assigned to a module
+  Constructs a master table where each credible set has been assigned to a module. It can be run directly on simple module or modules which have been further refined by coloc percolation.
+
+- **run_coloc_percolation**
+  Runs colocalization-guided percolation analysis to refine modules having credible sets which did not all colocalise among themselves in pair-wise tests.
+
+- **run_joint_finemapping**
+  Once modules have been defined, runs a joint fine-mapping to identify a single credible set for each module.
 
 ---
 
