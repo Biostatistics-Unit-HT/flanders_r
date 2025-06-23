@@ -74,4 +74,5 @@ for (i in seq_along(unique(master.table.meta$module))) {
   names(metanalysis)[i] <- paste0("Module_", mod.num)
 }
 }
+
 }

@@ -31,7 +31,7 @@ meta_analysis_per_trait <- function(ad_or_sce, coloc_res) {
     coloc_res_to_MA <- coloc_res %>%
         filter(t1 == t2 & t1_study_id != t2_study_id & PP.H4.abf >= 0.75)
 
-    print("There are ", nrow(coloc_res_to_MA), " pairs of colocalized credible sets of same traits across studies.")
+    print(paste0("There are ", nrow(coloc_res_to_MA), " pairs of colocalized credible sets of same traits across studies."))
 
     modules <- identify_simple_modules(
         coloc.results = coloc_res_to_MA,
