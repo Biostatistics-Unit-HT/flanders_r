@@ -37,7 +37,7 @@ Performs a meta-analysis on a list of credible sets (CS) from an `AnnData` or
 across studies or datasets.
 }
 \examples{
-\dontrun {
+\dontrun{
 library(SingleCellExperiment)
 library(data.table)
 library(zellkonverter)
