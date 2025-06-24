@@ -1,23 +1,9 @@
-# .gitlab-ci.yml
-image: rocker/tidyverse
+image: gitlab.fht.org:5050/biostatistics-unit/flanders_r:r-deps-1.0
 
 stages:
   - check
 
-# Bootstrap CRAN and Bioconductor dependencies
-.before_script_bioc: &before_script_bioc |
-  Rscript -e " \
-    pkgs <- c('coloc','susieR','anndata','R.utils','stringi','igraph','qgraph'); \
-    install.packages(pkgs, repos='https://cloud.r-project.org'); \
-    if (!requireNamespace('BiocManager', quietly=TRUE)) \
-      install.packages('BiocManager', repos='https://cloud.r-project.org'); \
-    BiocManager::install(c('SingleCellExperiment','zellkonverter','scRNAseq'), \
-                         ask=FALSE, update=FALSE) \
-  "
-
 check-job:
   stage: check
-  before_script:
-    - *before_script_bioc
   script:
     - R CMD check ./ --no-manual
