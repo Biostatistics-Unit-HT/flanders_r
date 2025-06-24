@@ -32,13 +32,6 @@ ma2anndata <- function(results, sce) {
   # 1) blacklist CS appearing >1× across all pairings
   all_cs <- unlist(lapply(results, function(x) x$list_of_cs_metaanalyzed))
   counts <- table(all_cs)
-  bad_cs <- names(counts)[counts != 1]
-  if (length(bad_cs) > 0) {
-    message("Excluding CS that appear multiple times:",
-            paste0("
- - ", bad_cs, collapse = ""))
-    results <- Filter(function(x) !any(x$list_of_cs_metaanalyzed %in% bad_cs), results)
-  }
 
   # 2) drop original CS columns from sce
   to_drop <- unique(unlist(lapply(results, `[[`, "list_of_cs_metaanalyzed")))
