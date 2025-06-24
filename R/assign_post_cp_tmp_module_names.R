@@ -29,9 +29,12 @@ assign_post_cp_tmp_module_names <- function(groups, traits){
       all_modules <- rbind(all_modules, tmp)
     }
     
-  } else {
-    traits$module <- stringi::stri_rand_strings(n=1, length=30, pattern="[A-Za-z0-9]")
-    all_modules <- rbind(all_modules, traits)
+  } else {    
+    tmp <- data.frame(
+        cs_name = traits,
+        module = stringi::stri_rand_strings(n=1, length=30, pattern="[A-Za-z0-9]")
+      )
+      all_modules <- rbind(all_modules, tmp)
   }
   return(all_modules)
 }
