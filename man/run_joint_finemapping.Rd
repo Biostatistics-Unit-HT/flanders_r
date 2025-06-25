@@ -19,8 +19,8 @@ A named list with:
   \item{`master.table`}{The original `module.master.table` merged with results from 
   `most.likely.snp.info`, including the most likely SNP, `most_likely_beta`, and `most_likely_se`.}
 
-  \item{`joint.lABF.matrix`}{A sparse matrix of joint lABF values. Rows correspond to `cs_name`s,
-  and columns to SNPs. Each `cs_name` inherits the lABF profile of its module.}
+  \item{`joint.lABF.matrix`}{A sparse matrix of joint lABF values. Rows correspond to module labels
+  and columns to SNPs. Each module row reflects the lABF profile shared by its credible sets.}
 }
 }
 \description{
@@ -33,7 +33,7 @@ and a sparse matrix summarizing joint evidence across modules.
 The function avoids redundant computation by extracting the full lABF matrix (`X` assay) once
 using `extract.ann.data.labf.matrix()`, and subsetting it inside `joint.finemapping()` for each module.
 
-The final sparse matrix duplicates lABF profiles across all `cs_name`s in the same module.
+The returned sparse matrix has one row per module and one column per SNP, values represent joint lABFs.
 }
 \examples{
 \dontrun{

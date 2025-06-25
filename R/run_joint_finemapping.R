@@ -17,15 +17,15 @@
 #'   \item{`master.table`}{The original `module.master.table` merged with results from 
 #'   `most.likely.snp.info`, including the most likely SNP, `most_likely_beta`, and `most_likely_se`.}
 #'
-#'   \item{`joint.lABF.matrix`}{A sparse matrix of joint lABF values. Rows correspond to `cs_name`s,
-#'   and columns to SNPs. Each `cs_name` inherits the lABF profile of its module.}
+#'   \item{`joint.lABF.matrix`}{A sparse matrix of joint lABF values. Rows correspond to module labels
+#'   and columns to SNPs. Each module row reflects the lABF profile shared by its credible sets.}
 #' }
 #'
 #' @details
 #' The function avoids redundant computation by extracting the full lABF matrix (`X` assay) once
 #' using `extract.ann.data.labf.matrix()`, and subsetting it inside `joint.finemapping()` for each module.
 #'
-#' The final sparse matrix duplicates lABF profiles across all `cs_name`s in the same module.
+#' The returned sparse matrix has one row per module and one column per SNP, values represent joint lABFs.
 #'
 #' @examples
 #' \dontrun{
@@ -44,7 +44,8 @@
 #' @seealso \code{\link{joint.finemapping}}, \code{\link{extract.ann.data.labf.matrix}}
 #'
 #' @importFrom data.table as.data.table setnames rbindlist
-#' @importFrom Matrix sparseMatrix
+#' @importFrom dplyr group_split
+#' @importFrom Matrix sparseMatrix drop0
 #'
 #' @export
 #' 
@@ -52,24 +53,25 @@ run_joint_finemapping <- function(
     ann.data.obj,
     module.master.table
 ) {
-  module.list <- split(module.master.table, by = "module", keep.by = FALSE)
-  
+  module.list <- module.master.table |> dplyr::group_split(module, .keep = TRUE)
+  names(module.list) <- as.character(unique(module.master.table$module))
+
   # Extract all lABFs once (for all cs) instead that in the loop
   all_cs_names <- module.master.table$cs_name
-  full_labf_matrix <- extract.ann.data.labf.matrix(
+  full_labf_matrix <- flanders:::extract.ann.data.labf.matrix(
     sce.obj = ann.data.obj,
     cs.list = all_cs_names
   )
   
   results <- lapply(module.list, function(module_table) {
-    joint.finemapping(
+    flanders:::joint.finemapping(
       ann.data.obj,
       module_table,
       full_labf_matrix = full_labf_matrix
     )
   })
   
-  names(results) <- as.character(names(module.list))
+  #names(results) <- as.character(names(module.list))
   
   # 1) Extract most likely SNP and joint fine-mapping info, add module reference
   snp_info_list <- list()
@@ -102,29 +104,26 @@ run_joint_finemapping <- function(
     by = c("module", "cs_name"),
     all.x = TRUE
   )
-  
-  # 3) Create sparse matrix: rows = cs_name (from module.master.table), cols = SNPs, values = lABF
-  
-  # Get mapping of module → cs_names from module.master.table
-  cs_name_map <- unique(module.master.table[, .(module, cs_name)])
-  
-  # Expand cs_info_combined for each cs_name in that module
-  cs_info_expanded <- cs_info_combined[cs_name_map, on = "module", allow.cartesian = TRUE] # Now each row of cs_info_combined is duplicated for every cs_name in that module
-  
-  # Finally build sparse matrix
-  row_factors <- factor(cs_info_expanded$cs_name)
-  col_factors <- factor(cs_info_expanded$snp)
-  
+
+  # 3) Create sparse matrix: rows = module label, cols = SNPs, values = lABF
+
+  cs_info_combined[, module_f := as.factor(module)] # Convert character columns to factor to get consistent indexing
+  cs_info_combined[, snp_f := as.factor(snp.name)]
+
+  # Create sparse matrix
   sparse_mat <- Matrix::sparseMatrix(
-    i = as.integer(row_factors),
-    j = as.integer(col_factors),
-    x = cs_info_expanded$lABF,
+    i = as.integer(cs_info_combined$module_f),   # row index from module
+    j = as.integer(cs_info_combined$snp_f),      # column index from snp.name
+    x = cs_info_combined$lABF,                   # values
+    dims = c(length(levels(cs_info_combined$module_f)), length(levels(cs_info_combined$snp_f))),
     dimnames = list(
-      levels(row_factors),  # cs_names
-      levels(col_factors)   # SNPs
+      levels(cs_info_combined$module_f),         # row names
+      levels(cs_info_combined$snp_f)             # column names
     )
   )
-  
+
+  sparse_mat <- Matrix::drop0(sparse_mat) # remove explicitly stored 0s and make them truly sparse 
+
   # Return results
   return(list(
     master.table = module.master.table,
