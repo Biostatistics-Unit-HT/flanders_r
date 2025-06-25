@@ -43,7 +43,7 @@
 #'
 #' @seealso \code{\link{joint.finemapping}}, \code{\link{extract.ann.data.labf.matrix}}
 #'
-#' @importFrom data.table as.data.table setnames rbindlist merge
+#' @importFrom data.table as.data.table setnames rbindlist
 #' @importFrom dplyr group_split
 #' @importFrom Matrix sparseMatrix drop0
 #'
