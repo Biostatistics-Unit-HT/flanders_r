@@ -44,7 +44,7 @@
 #' @seealso \code{\link{joint.finemapping}}, \code{\link{extract.ann.data.labf.matrix}}
 #'
 #' @importFrom data.table as.data.table setnames rbindlist
-#' @importFrom dplyr group_split
+#' @importFrom dplyr group_split group_keys pull
 #' @importFrom Matrix sparseMatrix drop0
 #'
 #' @export
@@ -53,8 +53,14 @@ run_joint_finemapping <- function(
     ann.data.obj,
     module.master.table
 ) {
-  module.list <- module.master.table |> dplyr::group_split(module, .keep = TRUE)
-  names(module.list) <- as.character(unique(module.master.table$module))
+
+  # Group and split
+  module.master.table_grouped <- module.master.table |> dplyr::group_by(module)
+  module.list <- module.master.table_grouped |> dplyr::group_split()
+
+  # Get the group names and assign
+  module_names <- module.master.table_grouped |> dplyr::group_keys() |> dplyr::pull()
+  names(module.list) <- module_names
 
   # Extract all lABFs once (for all cs) instead that in the loop
   all_cs_names <- module.master.table$cs_name
@@ -70,9 +76,7 @@ run_joint_finemapping <- function(
       full_labf_matrix = full_labf_matrix
     )
   })
-  
-  #names(results) <- as.character(names(module.list))
-  
+    
   # 1) Extract most likely SNP and joint fine-mapping info, add module reference
   snp_info_list <- list()
   cs_info_list <- list()
@@ -106,7 +110,6 @@ run_joint_finemapping <- function(
   )
 
   # 3) Create sparse matrix: rows = module label, cols = SNPs, values = lABF
-
   cs_info_combined[, module_f := as.factor(module)] # Convert character columns to factor to get consistent indexing
   cs_info_combined[, snp_f := as.factor(snp.name)]
 
