@@ -127,9 +127,23 @@ run_joint_finemapping <- function(
 
   sparse_mat <- Matrix::drop0(sparse_mat) # remove explicitly stored 0s and make them truly sparse 
 
+  # 4) Save start and end joint locus positions, and min res lANF
+  filtered <- module.master.table[module %in% names(results)]
+
+  cs_metadata_combined <- filtered[
+    , .(
+      chr = unique(chr),          # If chr is always unique per module
+      start = min(start, na.rm = TRUE),
+      end = max(end, na.rm = TRUE)
+    ),
+    by = module
+  ]
+
+
   # Return results
   return(list(
     master.table = module.master.table,
-    joint.lABF.matrix = sparse_mat
+    joint.lABF.matrix = sparse_mat,
+    cs_metadata = cs_metadata_combined
   ))
 }
