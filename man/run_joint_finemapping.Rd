@@ -23,7 +23,7 @@ A named list with:
   and columns to SNPs. Each module row reflects the lABF profile shared by its credible sets.}
 
   \item{`cs_metadata`}{A data table summarizing each module's chromosome (`chr`), start, and end positions
-  based on the credible sets it contains.}
+  based on the credible sets it contains, and the minimum log Bayes factor `min.labf` observed in the joint model.}
 }
 }
 \description{
@@ -37,7 +37,8 @@ The function avoids redundant computation by extracting the full lABF matrix (`X
 using `extract.ann.data.labf.matrix()`, and subsetting it inside `joint.finemapping()` for each module.
 
 The returned sparse matrix has one row per module and one column per SNP, values represent joint lABFs.
-The `cs_metadata` table provides a quick reference for genomic boundaries covered by each module.
+The `cs_metadata` table provides a quick reference for genomic boundaries covered by each module,
+as well as the minimal joint lABF per module
 }
 \examples{
 \dontrun{

@@ -21,7 +21,7 @@
 #'   and columns to SNPs. Each module row reflects the lABF profile shared by its credible sets.}
 #'
 #'   \item{`cs_metadata`}{A data table summarizing each module's chromosome (`chr`), start, and end positions
-#'   based on the credible sets it contains, and the minimum log Bayes factor `min.labf` observed in the joint model.}}
+#'   based on the credible sets it contains, and the minimum log Bayes factor `min.labf` observed in the joint model.}
 #' }
 #'
 #' @details
