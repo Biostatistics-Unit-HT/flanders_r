@@ -21,19 +21,24 @@ A named list with:
 
   \item{`joint.lABF.matrix`}{A sparse matrix of joint lABF values. Rows correspond to module labels
   and columns to SNPs. Each module row reflects the lABF profile shared by its credible sets.}
+
+  \item{`cs_metadata`}{A data table summarizing each module's chromosome (`chr`), start, and end positions
+  based on the credible sets it contains, and the minimum log Bayes factor `min.labf` observed in the joint model.}
 }
 }
 \description{
 Applies joint fine-mapping (`joint.finemapping`) to each module defined in `module.master.table`.
 This function extracts log-approximated Bayes factors (`lABFs`) once from the annotation object, 
-then applies `joint.finemapping()` to each module. The results include merged SNP-level outputs 
-and a sparse matrix summarizing joint evidence across modules.
+then applies `joint.finemapping()` to each module. The results include merged SNP-level outputs, 
+a sparse matrix summarizing joint evidence across modules and per-module metadata.
 }
 \details{
 The function avoids redundant computation by extracting the full lABF matrix (`X` assay) once
 using `extract.ann.data.labf.matrix()`, and subsetting it inside `joint.finemapping()` for each module.
 
 The returned sparse matrix has one row per module and one column per SNP, values represent joint lABFs.
+The `cs_metadata` table provides a quick reference for genomic boundaries covered by each module,
+as well as the minimal joint lABF per module
 }
 \examples{
 \dontrun{
@@ -47,6 +52,9 @@ head(results$master.table)
 
 # Access sparse matrix of lABFs
 results$joint.lABF.matrix
+
+# Access summary of module genomic ranges
+results$cs_metadata
 }
 
 }

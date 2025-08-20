@@ -3,8 +3,8 @@
 #' @description
 #' Applies joint fine-mapping (`joint.finemapping`) to each module defined in `module.master.table`.
 #' This function extracts log-approximated Bayes factors (`lABFs`) once from the annotation object, 
-#' then applies `joint.finemapping()` to each module. The results include merged SNP-level outputs 
-#' and a sparse matrix summarizing joint evidence across modules.
+#' then applies `joint.finemapping()` to each module. The results include merged SNP-level outputs, 
+#' a sparse matrix summarizing joint evidence across modules and per-module metadata.
 #'
 #' @param ann.data.obj A `SingleCellExperiment` or compatible object containing SNP-level assays
 #'        including `X` (lABF), `beta`, and `se`. Must contain column names matching `cs_name` values.
@@ -19,6 +19,9 @@
 #'
 #'   \item{`joint.lABF.matrix`}{A sparse matrix of joint lABF values. Rows correspond to module labels
 #'   and columns to SNPs. Each module row reflects the lABF profile shared by its credible sets.}
+#'
+#'   \item{`cs_metadata`}{A data table summarizing each module's chromosome (`chr`), start, and end positions
+#'   based on the credible sets it contains, and the minimum log Bayes factor `min.labf` observed in the joint model.}
 #' }
 #'
 #' @details
@@ -26,6 +29,8 @@
 #' using `extract.ann.data.labf.matrix()`, and subsetting it inside `joint.finemapping()` for each module.
 #'
 #' The returned sparse matrix has one row per module and one column per SNP, values represent joint lABFs.
+#' The `cs_metadata` table provides a quick reference for genomic boundaries covered by each module,
+#' as well as the minimal joint lABF per module
 #'
 #' @examples
 #' \dontrun{
@@ -39,6 +44,9 @@
 #'
 #' # Access sparse matrix of lABFs
 #' results$joint.lABF.matrix
+#'
+#' # Access summary of module genomic ranges
+#' results$cs_metadata
 #' }
 #'
 #' @seealso \code{\link{joint.finemapping}}, \code{\link{extract.ann.data.labf.matrix}}
@@ -127,9 +135,36 @@ run_joint_finemapping <- function(
 
   sparse_mat <- Matrix::drop0(sparse_mat) # remove explicitly stored 0s and make them truly sparse 
 
+  # 4) Save start and end joint locus positions, and min res lANF
+  filtered <- module.master.table[module %in% names(results)]
+
+  cs_metadata_combined <- filtered[
+    , .(
+      chr = unique(chr),
+      start = min(start, na.rm = TRUE),
+      end = max(end, na.rm = TRUE)
+    ),
+    by = module
+  ]
+
+  # 5) Extract min.labf per module
+  mim_labf_dt <- data.table(
+    module = as.numeric(names(results)),
+    min.labf = sapply(results, function(res) res$mim.labf)
+  )
+
+  # 6) Merge mim.labf into cs_metadata_combined
+  cs_metadata_combined <- merge(
+    cs_metadata_combined,
+    mim_labf_dt,
+    by = "module",
+    all.x = TRUE
+  )
+
   # Return results
   return(list(
     master.table = module.master.table,
-    joint.lABF.matrix = sparse_mat
+    joint.lABF.matrix = sparse_mat,
+    cs_metadata = cs_metadata_combined
   ))
 }
