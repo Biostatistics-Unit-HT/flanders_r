@@ -1,4 +1,4 @@
-image: gitlab.fht.org:5050/biostatistics-unit/flanders_r:r-deps-1.0
+image: gitlab.fht.org:5050/biostatistics-unit/flanders_r:r-deps-2.1
 
 stages:
   - check

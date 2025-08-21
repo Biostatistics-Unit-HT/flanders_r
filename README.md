@@ -60,7 +60,7 @@ This guide installs all dependencies from CRAN and Bioconductor for a straightfo
 
 For a more reproducible environment or if you need to interface with Python’s AnnData via reticulate, you can set up a Conda environment as follows:
 ```bash
-mamba create -p /ssu/bsssu/conda_envs_bsssu/flanders_r_2.0 \
+mamba create -p /ssu/bsssu/conda_envs_bsssu/flanders_r_2.2.0 \
   -c conda-forge -c bioconda -c R \
   r-base=4.4 \
   bioconductor-singlecellexperiment=1.28.0 \
@@ -77,11 +77,18 @@ mamba create -p /ssu/bsssu/conda_envs_bsssu/flanders_r_2.0 \
   r-igraph=2.0.3 \
   r-qgraph=1.9.8 \
   r-r.utils=2.13.0 \
-  r-stringi
+  r-stringi \
+  r-rmpfr \
+  r-remotes
 
 conda activate <your_folder_with_conda_envs>/flanders_r
+Rscript -e "install.packages('https://cran.r-project.org/src/contrib/Archive/RcppEigen/RcppEigen_0.3.3.9.3.tar.gz', lib='<your_folder_with_conda_envs>/lib/R/library/', upgrade = 'never')"
+
+
+Rscript -e "remotes::install_github('jrs95/hyprcoloc', build_vignettes = FALSE,lib='<your_folder_with_conda_envs>/lib/R/library/', upgrade = 'never')"
+
 git clone git@github.com:Biostatistics-Unit-HT/flanders_r.git
-install.packages("flanders_r", repos = NULL, type = "source")
+install.packages("flanders_r", repos = NULL, type = "source",lib='<your_folder_with_conda_envs>/lib/R/library/')
 
 ```
 
