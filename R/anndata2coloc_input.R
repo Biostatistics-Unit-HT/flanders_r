@@ -92,6 +92,22 @@ anndata2coloc_input <- function(ad_or_sce) {
   matrix_product <- X %*% Matrix::t(X)
   diag(matrix_product) <- 0
 
+  # If all elements are zero, return empty data.frame with correct colnames
+  if (all(matrix_product == 0)) {
+    return(data.frame(
+      t2 = character(0),
+      t1 = character(0),
+      t1_study_id = character(0),
+      t1_phenotype_id = character(0),
+      t1_top_pvalue = numeric(0),
+      t2_study_id = character(0),
+      t2_phenotype_id = character(0),
+      t2_top_pvalue = numeric(0),
+      chr = character(0),
+      stringsAsFactors = FALSE
+    ))
+  }
+
   # Find non-zero overlaps (shared SNPs)
   shared_elements <- which(matrix_product > 0, arr.ind = TRUE)
   shared_elements_df <- as.data.frame(shared_elements)
