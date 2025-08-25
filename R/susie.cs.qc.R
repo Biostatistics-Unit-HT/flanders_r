@@ -12,7 +12,6 @@
 #'
 #' @param susie_output A SuSiE_R output (e.g. susieR::fitted_rss()).
 #' @param cs_bf_thr A numeric value representing the credible set BF threshold for filtering credible sets (default is 3).
-#' @param cs_lbf_thr A numeric value representing the credible set logBF threshold for filtering credible sets (default is 0).
 #' @param pval A numeric vector representing P-values of the SNPs in the locus, tested in the susie_output.
 #' @param signal_pval_threshold A numeric value representing top SNP P-value threshold for filtering credible sets (default is 1).
 #' @param purity_mean_r2_threshold A numeric value representing the threshold for purity mean r2 QC metrics for filtering credible sets (default is 0).
@@ -31,7 +30,6 @@
 #'     susie_output = susie_output,
 #'     pval = pval,
 #'     cs_bf_thr = 3, 
-#'     cs_lbf_thr = 0,
 #'     signal_pval_threshold = 1,
 #'     purity_mean_r2_threshold = 0,
 #'     purity_min_r2_threshold = 0,
@@ -43,7 +41,6 @@ susie.cs.ht <- function(
     susie_output = NULL,
     pval = NULL,
     cs_bf_thr = 3,
-    cs_lbf_thr = 0,
     signal_pval_threshold = 1,
     purity_mean_r2_threshold = 0,
     purity_min_r2_threshold = 0,
@@ -58,9 +55,6 @@ susie.cs.ht <- function(
   # 2.738234 0.9994622 0.9994622 200,202
   
   cs_info <- susieR::summary.susie(susie_output)$cs
-  
-  # Get names of the CS that have lbf above threshold
-  good_lbf_cs <- cs_info$cs[cs_info$cs_log10bf >= log10(exp(cs_lbf_thr))]
 
   # Get names of the CS that have bf above threshold
   good_bf_cs <- cs_info$cs[cs_info$cs_log10bf >= exp(cs_bf_thr)]
@@ -90,13 +84,12 @@ susie.cs.ht <- function(
   }
   
   # Get intersect of CS that satisfy all the thresholds
-  cs_to_keep <- Reduce(intersect,list(good_lbf_cs, good_bf_cs, good_purity_mean_cs, good_purity_min_cs,good_pval_cs))
+  cs_to_keep <- Reduce(intersect,list(good_bf_cs, good_purity_mean_cs, good_purity_min_cs,good_pval_cs))
   
   susie_output_filtered <- susie_output
   
   # Print verbose information
   if(verbose){
-    message(paste0(c("CS with lbf above threshold: ",good_lbf_cs),collapse = " "))
     message(paste0(c("CS with bf above threshold: ",good_bf_cs),collapse = " "))
     message(paste0(c("CS with mean purity above threshold: ",good_purity_mean_cs),collapse = " "))
     message(paste0(c("CS with min purity threshold: ",good_purity_min_cs),collapse = " "))
