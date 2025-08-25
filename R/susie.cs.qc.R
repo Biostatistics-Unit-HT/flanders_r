@@ -11,7 +11,7 @@
 #' susie_output$sets$coverage
 #'
 #' @param susie_output A SuSiE_R output (e.g. susieR::fitted_rss()).
-#' @param cs_bf_thr A numeric value representing the credible set BF threshold for filtering credible sets (default is 2).
+#' @param cs_bf_thr A numeric value representing the credible set BF threshold for filtering credible sets (default is 3).
 #' @param cs_lbf_thr A numeric value representing the credible set logBF threshold for filtering credible sets (default is 0).
 #' @param pval A numeric vector representing P-values of the SNPs in the locus, tested in the susie_output.
 #' @param signal_pval_threshold A numeric value representing top SNP P-value threshold for filtering credible sets (default is 1).
@@ -30,7 +30,7 @@
 #' susie_filtered <- susie.cs.ht(
 #'     susie_output = susie_output,
 #'     pval = pval,
-#'     cs_bf_thr = 2, 
+#'     cs_bf_thr = 3, 
 #'     cs_lbf_thr = 0,
 #'     signal_pval_threshold = 1,
 #'     purity_mean_r2_threshold = 0,
@@ -42,7 +42,7 @@
 susie.cs.ht <- function(
     susie_output = NULL,
     pval = NULL,
-    cs_bf_thr = 2,
+    cs_bf_thr = 3,
     cs_lbf_thr = 0,
     signal_pval_threshold = 1,
     purity_mean_r2_threshold = 0,
