@@ -47,7 +47,7 @@
 #' # Perform hypercoloc analysis
 #' hyper_res <- community2hypercoloc(sce_by_chr, community)
 #' }
-#' }
+#'
 #' @export
 community2hypercoloc <- function(sce_per_chr, community) {
   # Subsetting sce with SNPs in list of hits
