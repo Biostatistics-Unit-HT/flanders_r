@@ -11,8 +11,8 @@
 #' susie_output$sets$coverage
 #'
 #' @param susie_output A SuSiE_R output (e.g. susieR::fitted_rss()).
-#' @param cs_bf_thr A numeric value representing the credible set BF threshold for filtering credible sets (default is 3).
 #' @param pval A numeric vector representing P-values of the SNPs in the locus, tested in the susie_output.
+#' @param cs_bf_thr A numeric value representing the credible set BF threshold for filtering credible sets (default is 3).
 #' @param signal_pval_threshold A numeric value representing top SNP P-value threshold for filtering credible sets (default is 1).
 #' @param purity_mean_r2_threshold A numeric value representing the threshold for purity mean r2 QC metrics for filtering credible sets (default is 0).
 #' @param purity_min_r2_threshold A numeric value representing the threshold for purity min r2 QC metrics for filtering credible sets (default is 0).
@@ -57,7 +57,7 @@ susie.cs.ht <- function(
   cs_info <- susieR::summary.susie(susie_output)$cs
 
   # Get names of the CS that have bf above threshold
-  good_bf_cs <- cs_info$cs[cs_info$cs_log10bf >= exp(cs_bf_thr)]
+  good_bf_cs <- cs_info$cs[cs_info$cs_log10bf >= log10(cs_bf_thr)]
 
   # Get names of the CS that have mean purity above threshold
   good_purity_mean_cs <-  cs_info$cs[cs_info$cs_avg_r2 >= purity_mean_r2_threshold]
