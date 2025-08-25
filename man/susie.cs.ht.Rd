@@ -7,10 +7,10 @@
 susie.cs.ht(
   susie_output = NULL,
   pval = NULL,
-  cs_lbf_thr = 2,
+  cs_bf_thr = 3,
   signal_pval_threshold = 1,
-  purity_mean_r2_threshold = 0.5,
-  purity_min_r2_threshold = 0.5,
+  purity_mean_r2_threshold = 0,
+  purity_min_r2_threshold = 0,
   verbose = FALSE
 )
 }
@@ -19,13 +19,13 @@ susie.cs.ht(
 
 \item{pval}{A numeric vector representing P-values of the SNPs in the locus, tested in the susie_output.}
 
-\item{cs_lbf_thr}{A numeric value representing the credible set logBF threshold for filtering credible sets (default is 2).}
+\item{cs_bf_thr}{A numeric value representing the credible set BF threshold for filtering credible sets (default is 3).}
 
-\item{signal_pval_threshold}{A numeric value representing top SNP P-value threshold for filtering credible sets (default is 1e-6).}
+\item{signal_pval_threshold}{A numeric value representing top SNP P-value threshold for filtering credible sets (default is 1).}
 
-\item{purity_mean_r2_threshold}{A numeric value representing the threshold for purity mean r2 QC metrics for filtering credible sets (default is 0.5).}
+\item{purity_mean_r2_threshold}{A numeric value representing the threshold for purity mean r2 QC metrics for filtering credible sets (default is 0).}
 
-\item{purity_min_r2_threshold}{A numeric value representing the threshold for purity min r2 QC metrics for filtering credible sets (default is 0.5).}
+\item{purity_min_r2_threshold}{A numeric value representing the threshold for purity min r2 QC metrics for filtering credible sets (default is 0).}
 
 \item{verbose}{A boolean value. If TRUE, the log information will be printed.}
 }
@@ -49,7 +49,7 @@ and returns a Susie object.
 susie_filtered <- susie.cs.ht(
     susie_output = susie_output,
     pval = pval,
-    cs_lbf_thr = 2,
+    cs_bf_thr = 3, 
     signal_pval_threshold = 1,
     purity_mean_r2_threshold = 0,
     purity_min_r2_threshold = 0,
