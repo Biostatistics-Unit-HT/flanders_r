@@ -28,3 +28,35 @@ The function first extracts the appropriate chromosome-specific SCE object,
 then uses \code{extract_data_hypercoloc} to get aligned beta and SE matrices,
 and finally performs hypercoloc analysis using the \code{hyprcoloc} package.
 }
+\examples{
+\donttest{
+library(SingleCellExperiment)
+library(hyprcoloc)
+library(data.table)
+library(zellkonverter)
+
+sce <- readH5AD(
+  file = "/ssu/bsssu/anndata_finemapping_repository/cardinal_UKBB_europeans_ELGH_pakistani_cis_finemapping_full_FLIP_FIXED_20250611.h5ad",
+  verbose = TRUE,
+  reader = "R"
+)
+
+# Split SCE by chromosome
+sce_by_chr <- pblapply(unique(colData(sce)$chr), function(chr) {
+  snp_rows <- which(rowData(sce)$chr == chr)
+  cred_cols <- which(colData(sce)$chr == chr)
+  sce[snp_rows, cred_cols]
+})
+names(sce_by_chr) <- unique(colData(sce)$chr)
+
+# Example community
+community <- list(
+  nodes = c("study1::trait1::cs1", "study2::trait1::cs2", "study3::trait1::cs3"),
+  chr = 17
+)
+
+# Perform hypercoloc analysis
+hyper_res <- community2hypercoloc(sce_by_chr, community)
+}
+
+}
