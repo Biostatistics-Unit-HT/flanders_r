@@ -30,11 +30,12 @@ expand_cs <- function(fitted) {
     cs_list  <- fitted$sets$cs
     snp_names <- colnames(fitted$lbf_variable)
     
-    expanded <- lapply(seq_along(cs_list), function(i) {
+    expanded <- lapply(names(cs_list), function(i) {
         idx_original <- cs_list[[i]]
         names(idx_original) <- snp_names[idx_original]  # name with SNP IDs
+        i_num <- as.integer(gsub("L", "", i))
     
-        lbf_vec <- fitted$lbf_variable[i, ] ### are sure that the index of credible sets is the same here?
+        lbf_vec <- fitted$lbf_variable[i_num, ]
         idx_expanded <- find_threshold(lbf_vec, original_idx = idx_original)
     
         # Union of both
@@ -43,6 +44,6 @@ expand_cs <- function(fitted) {
         
         idx_union
     })
-    names(expanded) <- paste0("L", seq_along(cs_list))
+    names(expanded) <- names(cs_list)
     return(expanded)
 }
