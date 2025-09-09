@@ -27,8 +27,7 @@
 #' names(expanded)
 #' }
 expand_cs <- function(fitted) {
-    coverage <- fitted$sets$requested_coverage
-    cs_list  <- susie_get_cs(fitted, coverage = coverage)$cs
+    cs_list  <- fitted$sets$cs
     snp_names <- colnames(fitted$lbf_variable)
     
     expanded <- lapply(seq_along(cs_list), function(i) {
