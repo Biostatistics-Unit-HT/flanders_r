@@ -1,7 +1,7 @@
 #' Expand SuSiE Credible Sets by Thresholding
 #'
 #' Expands each credible set (CS) from a fitted \code{susie} or \code{susie_rss} 
-#' object by applying a thresholding rule to log Bayes factors.  
+#' object by applying a thresholding rule to log Bayes factors (\code{lbf_variable}). 
 #' The expanded set is defined as the union of the original CS and 
 #' SNPs identified via \code{\link{find_threshold}}.
 #'
@@ -13,11 +13,10 @@
 #'   expanded credible sets, with SNP IDs as names.
 #'
 #' @details 
-#' The function retrieves original CSs using \code{susie_get_cs()}, 
-#' then applies \code{find_threshold()} to the corresponding lBF values.  
-#' The expanded CS is the union of both sets.
+#' The function retrieves original CSs, then applies \code{find_threshold()}
+#' to the corresponding lBF values. The expanded CS is the union of both sets.
 #'
-#' @seealso \code{\link{find_threshold}}, \code{\link[susieR]{susie_get_cs}}
+#' @seealso \code{\link{find_threshold}}
 #' @export
 #'
 #' @examples
