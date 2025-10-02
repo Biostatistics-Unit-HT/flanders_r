@@ -1,7 +1,7 @@
 Package: flanders
 Type: Package
 Title: Finemapping coLocalization AND plEiotRopy Solver
-Version: 2.2.1
+Version: 2.3.0
 Author: Sodbo Sharapov, Arianna Landini, Nicola Pirastu
 Maintainer: Sodbo Sharapov <sodbo.sharapov@fht.org>
 Description: A tool for fine-mapping, colocalization, and pleiotropy analysis
@@ -20,10 +20,11 @@ Imports:
   igraph,
   qgraph,
   stringi,
-  R.utils
+  R.utils,
+  S4Vectors
 ImportFrom: 
   stats, setNames
 License: GPL-3
 Encoding: UTF-8
 LazyData: false
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
