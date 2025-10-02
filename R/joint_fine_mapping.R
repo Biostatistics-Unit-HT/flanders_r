@@ -62,9 +62,60 @@ joint.finemapping = function(ann.data.obj,
                              module.master.table,
                              full_labf_matrix = NULL){
   
-  # Subset the full_labf_matrix to the cs_names for this module
+  # --- Case 1: Only one CS (skip joint finemapping) ---
+  if (nrow(module.master.table) == 1) {
+    message("Single CS module - exporting CS as it is")
+    cs_name <- module.master.table$cs_name
+    
+    # Get ABF vector for this CS
+    abf.vector <- if (is.null(full_labf_matrix)) {
+      flanders:::extract.ann.data.labf.matrix(
+        sce.obj = ann.data.obj,
+        cs.list = cs_name
+      )[,1]
+    } else {
+      full_labf_matrix[, cs_name]
+    }
+    
+    # Compute PIPs and 99% CS
+    PIP <- flanders:::logbf_to_pp(abf.vector)
+    cs.99 <- cumsum(sort(PIP, decreasing = TRUE))
+    cs.99 <- names(cs.99[1:(which(cs.99 > 0.99)[1])])
+    most.likely.snp <- cs.99[1]
+    
+    # Extract beta/se ONLY for the top SNP
+    betas <- ann.data.obj[most.likely.snp, cs_name]@assays@data$beta
+    se <- ann.data.obj[most.likely.snp, cs_name]@assays@data$se
+    
+    most.likely.snp.info <- data.frame(
+      cs_name = cs_name,
+      most_likely_snp = most.likely.snp,
+      beta = as.vector(betas),
+      se = as.vector(se)
+    )
+    
+    cs.info <- data.frame(
+      snp.name = cs.99,
+      PIP = PIP[cs.99],
+      lABF = abf.vector[cs.99]
+    )
+    
+    mim.labf <- min(abf.vector[!(names(abf.vector) %in% cs.99)], na.rm = TRUE)
+    sum.labf <- coloc:::logsum(abf.vector)
+    
+    return(list(
+      most.likely.snp.info = most.likely.snp.info,
+      cs.info = cs.info,
+      mim.labf = mim.labf,
+      sum.labf = sum.labf
+    ))
+  }
+  
+  message("Mutiple CS module - performing joint-finemapping")
+  
+  # --- Case 2: Multiple CS (joint finemapping) ---
   if (is.null(full_labf_matrix)) {
-    abf.matrix <- extract.ann.data.labf.matrix(
+    abf.matrix <- flanders:::extract.ann.data.labf.matrix(
       sce.obj = ann.data.obj,
       cs.list = module.master.table$cs_name
     )
@@ -72,15 +123,18 @@ joint.finemapping = function(ann.data.obj,
     abf.matrix <- full_labf_matrix[, module.master.table$cs_name, drop = FALSE]
   }
   
-  joint.fm <- rowSums(abf.matrix)
-  PIP <- logbf_to_pp(joint.fm)
+  joint.fm <- sort(rowSums(abf.matrix),decreasing = TRUE)
   
-  cs.99 <- cumsum(sort(PIP,decreasing = T))
-  cs.99 <- names(cs.99[1:(which(cs.99>0.99)[1])])
+  PIP <- flanders:::logbf_to_pp(joint.fm)
+  
+  cs.99 <- cumsum(sort(PIP, decreasing = TRUE))
+  cs.99 <- names(cs.99[1:(which(cs.99 > 0.99)[1])])
+  
+  cs.99 <- names(find_threshold(joint.fm,names(cs.99)))
   
   most.likely.snp <- cs.99[1]
-  betas <- ann.data.obj[most.likely.snp,module.master.table$cs_name]@assays@data$beta
-  se <- ann.data.obj[most.likely.snp,module.master.table$cs_name]@assays@data$se
+  betas <- ann.data.obj[most.likely.snp, module.master.table$cs_name]@assays@data$beta
+  se <- ann.data.obj[most.likely.snp, module.master.table$cs_name]@assays@data$se
   
   most.likely.snp.info <- data.frame(
     cs_name = module.master.table$cs_name,
@@ -95,14 +149,13 @@ joint.finemapping = function(ann.data.obj,
     lABF = joint.fm[cs.99]
   )
   
-  mim.labf <- min(joint.fm[which(!(joint.fm%in%cs.99))],na.rm=T)
-  sum.labf <- coloc:::logsum(joint.fm) 
+  mim.labf <- min(joint.fm[!(names(joint.fm) %in% cs.99)], na.rm = TRUE)
+  sum.labf <- coloc:::logsum(joint.fm)
   
   return(list(
     most.likely.snp.info = most.likely.snp.info,
     cs.info = cs.info,
     mim.labf = mim.labf,
-    sum.labf = sum.labf)
-  )
-  
+    sum.labf = sum.labf
+  ))
 }

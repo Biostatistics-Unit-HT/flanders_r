@@ -72,16 +72,16 @@ run_joint_finemapping <- function(
 
   # Extract all lABFs once (for all cs) instead that in the loop
   all_cs_names <- module.master.table$cs_name
-  full_labf_matrix <- flanders:::extract.ann.data.labf.matrix(
-    sce.obj = ann.data.obj,
-    cs.list = all_cs_names
-  )
+  #full_labf_matrix <- flanders:::extract.ann.data.labf.matrix(
+  #  sce.obj = ann.data.obj,
+  #  cs.list = all_cs_names
+  #)
   
   results <- lapply(module.list, function(module_table) {
     flanders:::joint.finemapping(
       ann.data.obj,
       module_table,
-      full_labf_matrix = full_labf_matrix
+      full_labf_matrix = NULL
     )
   })
     
