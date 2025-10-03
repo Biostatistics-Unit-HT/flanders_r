@@ -57,7 +57,7 @@ fix_ad_var <- function(ad) {
     # Write back into rowData
     rowData(ad) <- S4Vectors::DataFrame(var)
     
-  } else if (inherits(ad, "AnnData")) {
+  } else if (inherits(ad, "AnnDataR6")) {
     # Add snp column if missing
     if (!"snp" %in% colnames(ad$var)) {
       ad$var$snp <- rownames(ad$var)
