@@ -50,7 +50,10 @@ anndata2coloc <- function(ad_or_sce, coloc_input) {
   ad_by_chr <- lapply(list_of_chr, function(chr) {
     if (is_sce) {
       snp_rows  <- which(rowData(ad_or_sce)$chr == chr)   # SNPs (features)
-      cred_cols <- which(colData(ad_or_sce)$chr == chr)     # Credible sets (cells)
+      cred_cols <- which(                                 # Credible sets (cells)
+        colData(ad_or_sce)$chr == chr & 
+        colData(ad_or_sce)$cs_name %in% c(coloc_input$t1,coloc_input$t2)
+      )
       ad_or_sce[snp_rows, cred_cols]
     } else {
       ad_or_sce[ad_or_sce$obs$chr == chr, ad_or_sce$var$chr == chr]
