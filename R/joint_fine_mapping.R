@@ -72,7 +72,7 @@ joint.finemapping = function(ann.data.obj,
       flanders:::extract.ann.data.labf.matrix(
         sce.obj = ann.data.obj,
         cs.list = cs_name
-      )[,1]
+      )[,1,drop = FALSE]
     } else {
       full_labf_matrix[, cs_name]
     }
