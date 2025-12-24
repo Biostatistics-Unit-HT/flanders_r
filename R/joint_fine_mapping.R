@@ -79,7 +79,9 @@ joint.finemapping = function(ann.data.obj,
     
     # Compute PIPs and 99% CS
     PIP <- flanders:::logbf_to_pp(abf.vector)
-    cs.99 <- cumsum(sort(PIP, decreasing = TRUE))
+    PIP <- PIP[order(PIP[,cs_name],decreasing = TRUE),,drop=FALSE]
+    cs.99 <- cumsum(PIP)
+    names(cs.99) <- rownames(PIP)
     cs.99 <- names(cs.99[1:(which(cs.99 > 0.99)[1])])
     most.likely.snp <- cs.99[1]
     
@@ -100,7 +102,7 @@ joint.finemapping = function(ann.data.obj,
       lABF = abf.vector[cs.99]
     )
     
-    mim.labf <- min(abf.vector[!(names(abf.vector) %in% cs.99)], na.rm = TRUE)
+    mim.labf <- min(abf.vector[!(rownames(abf.vector) %in% cs.99)], na.rm = TRUE)
     sum.labf <- coloc:::logsum(abf.vector)
     
     return(list(
