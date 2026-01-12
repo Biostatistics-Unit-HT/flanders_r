@@ -98,11 +98,14 @@ joint.finemapping = function(ann.data.obj,
     
     cs.info <- data.frame(
       snp.name = cs.99,
-      PIP = PIP[cs.99],
-      lABF = abf.vector[cs.99]
+      PIP = PIP[cs.99,1],
+      lABF = abf.vector[cs.99,1]
     )
     
     mim.labf <- min(abf.vector[!(rownames(abf.vector) %in% cs.99)], na.rm = TRUE)
+    if(is.infinite(mim.labf))
+      mim.labf <- log(1e-4)
+
     sum.labf <- coloc:::logsum(abf.vector)
     
     return(list(
