@@ -96,6 +96,11 @@ If you already have an AnnData:
 
 If you already have multiple AnnDatas:
 ```r
+   library(zellkonverter)
+   library(SingleCellExperiment)
+   library(scRNAseq)
+   library(anndata)
+
    list_of_ads <- list("/path/to/ad1.h5ad","/path/to/output/ad2.h5ad")
    list_of_ads <- lapply(list_of_ads,read_h5ad)
 
