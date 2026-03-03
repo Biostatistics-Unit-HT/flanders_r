@@ -87,7 +87,7 @@ Rscript -e "install.packages('https://cran.r-project.org/src/contrib/Archive/Rcp
 
 Rscript -e "remotes::install_github('jrs95/hyprcoloc', build_vignettes = FALSE,lib='<your_folder_with_conda_envs>/lib/R/library/', upgrade = 'never')"
 
-git clone git@github.com:Biostatistics-Unit-HT/flanders_r.git
+git clone git@gitlab.fht.org:biostatistics-unit/flanders_r.git
 install.packages("flanders_r", repos = NULL, type = "source",lib='<your_folder_with_conda_envs>/lib/R/library/')
 
 ```
