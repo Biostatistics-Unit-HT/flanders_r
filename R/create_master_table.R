@@ -100,7 +100,11 @@ create_master_table <- function(
   
   # Step 2: Merge with metadata
   master.table_w_modules <- combined_modules[master.table, on = "cs_name"]
-  master.table_w_modules$module_type <- ifelse(is.na(master.table_w_modules$module_type), "fully_connected", master.table_w_modules$module_type)
+  master.table_w_modules$module_type <- ifelse(
+    is.na(master.table_w_modules$module_type), 
+    "fully_connected", 
+    master.table_w_modules$module_type
+    )
   
   # Step 3: Handle NA modules — assign unique numeric ID per NA row
   next_module <- max(combined_modules$module, na.rm = TRUE) + 1
