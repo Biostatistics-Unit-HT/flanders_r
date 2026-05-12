@@ -32,10 +32,11 @@ A `data.table` combining credible set metadata with numeric module assignments.
 This function constructs a master table from either a `SingleCellExperiment`
 or `anndata`-like object, then joins it with module assignment tables.
 It supports either a single set of simple modules or a combination
-of post-coloc percolation and fully connected modules. When the output
-list of `run_coloc_percolation` is provided, the `post_cp_tmp_module`
-table is extracted from each element. In addition, any rows without an
-assigned module (i.e., `NA` values in the `module` column) are assigned new
+of refined (post-coloc percolation or hypercoloc) and fully connected modules.
+When the output list of `run_coloc_percolation()` or `community2hypercoloc()`
+is provided, the `post_cp_tmp_module` table is extracted from each element.
+In addition, any rows without an assigned module 
+(i.e., `NA` values in the `module` column) are assigned new
 unique module IDs starting from the next available integer.
 }
 \details{

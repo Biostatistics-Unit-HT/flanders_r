@@ -4,10 +4,11 @@
 #' This function constructs a master table from either a `SingleCellExperiment`
 #' or `anndata`-like object, then joins it with module assignment tables.
 #' It supports either a single set of simple modules or a combination
-#' of post-coloc percolation and fully connected modules. When the output
-#' list of `run_coloc_percolation` is provided, the `post_cp_tmp_module`
-#' table is extracted from each element. In addition, any rows without an
-#' assigned module (i.e., `NA` values in the `module` column) are assigned new
+#' of refined (post-coloc percolation or hypercoloc) and fully connected modules.
+#' When the output list of `run_coloc_percolation()` or `community2hypercoloc()`
+#' is provided, the `post_cp_tmp_module` table is extracted from each element.
+#' In addition, any rows without an assigned module 
+#' (i.e., `NA` values in the `module` column) are assigned new
 #' unique module IDs starting from the next available integer.
 #'
 #' @param ad_or_sce Either a `SingleCellExperiment`  or an `anndata`-like object
@@ -62,6 +63,7 @@ create_master_table <- function(
   if (!is.null(simple_modules)) {
     
     combined_modules <- as.data.table(simple_modules)
+    combined_modules[, module_type := "simple"]
     
   } else if (!is.null(post_cp_list) && !is.null(fully_connected_modules)) {
     
@@ -76,6 +78,9 @@ create_master_table <- function(
     # Ensure fully_connected_modules$module is numeric
     fully_connected_modules[, module := as.integer(module)]
     
+    # Add type of module
+    fully_connected_modules[, module_type := "fully_connected"]
+    
     # Get max value from fully_connected_modules to avoid collisions
     offset <- max(fully_connected_modules$module, na.rm = TRUE) + 1
     
@@ -84,20 +89,28 @@ create_master_table <- function(
     module_mapping <- setNames(seq(offset, offset + length(unique_modules) - 1), unique_modules)
     post_cp_modules[, module := module_mapping[module]]
     
+    # Add type of module
+    post_cp_modules[, module_type := "refined"]
+    
     # Combine both
     combined_modules <- rbindlist(list(fully_connected_modules, post_cp_modules), use.names = TRUE, fill = TRUE)
   } else {
-    stop("Provide either `modules`, or both `modules1` and `modules2`.")
+    stop("Provide either `simple_modules`, or both `post_cp_list` and `fully_connected_modules`.")
   }
   
   # Step 2: Merge with metadata
   master.table_w_modules <- combined_modules[master.table, on = "cs_name"]
+  master.table_w_modules$module_type <- ifelse(
+    is.na(master.table_w_modules$module_type), 
+    "fully_connected", 
+    master.table_w_modules$module_type
+    )
   
   # Step 3: Handle NA modules — assign unique numeric ID per NA row
   next_module <- max(combined_modules$module, na.rm = TRUE) + 1
   
   if (any(is.na(master.table_w_modules$module))) {
-    master.table_w_modules <- replace_nas_with_modules(
+    master.table_w_modules <- flanders:::replace_nas_with_modules(
       master.table_w_modules,
       start_value = next_module
     )
