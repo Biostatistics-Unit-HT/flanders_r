@@ -6,13 +6,26 @@
 #' colocalization probabilities between two datasets.
 #'
 #' @param coloc_combo_row A row from the colocalization guide table containing
-#' information on trait pairs to be tested.
+#' information on trait pairs to be tested. Expected columns: \code{t1},
+#' \code{t2} (credible-set names that must be present in the AnnData /
+#' SingleCellExperiment), \code{t1_study_id}, \code{t2_study_id},
+#' \code{t1_phenotype_id}, \code{t2_phenotype_id} and \code{chr}.
 #'
 #' @param ad_by_chr A list of AnnData object, split by chromosome. Each element
 #' of the list should have name like chr1, chr 21 and so on
 #'
-#' @return A list with colocalization results, including a summary with the top
-#' SNPs and trait information.
+#' @return A list with colocalization results. The \code{$summary} data frame
+#' contains the standard coloc posteriors (\code{nsnps},
+#' \code{PP.H0.abf}-\code{PP.H4.abf}) plus the following identification
+#' columns:
+#' \describe{
+#'   \item{\code{t1_study_id}, \code{t2_study_id}}{Study IDs as provided in
+#'   the input row.}
+#'   \item{\code{t1}, \code{t2}}{Trait \emph{labels}: the
+#'   \code{phenotype_id} when available, otherwise the \code{study_id}.
+#'   \item{\code{hit1}, \code{hit2}} the
+#'   credible-set name from coloc_combo_row$t1 and coloc_combo_row$t2.}
+#' }
 #' @export
 #' @import dplyr
 #'
@@ -123,18 +136,18 @@ anndata2coloc_row <- function(coloc_combo_row, ad_by_chr) {
     coloc_combo_row$t2_study_id,
     coloc_combo_row$t2_phenotype_id
   )
-  
-  cojo_snp1 <- gsub(paste0(t1_label, "_(.*)_locus_.*_finemap.rds"), "\\1", coloc_combo_row$t1)
-  cojo_snp2 <- gsub(paste0(t2_label, "_(.*)_locus_.*_finemap.rds"), "\\1", coloc_combo_row$t2)
-  
+  # Remove the gsub extraction and just use the credible-set name itself
+  cojo_snp1 <- coloc_combo_row$t1
+  cojo_snp2 <- coloc_combo_row$t2
+
   icoloc.res$summary <- icoloc.res$summary %>%
     dplyr::mutate(
       t1_study_id = coloc_combo_row$t1_study_id,
-      t1 = t1_label,
+      t1          = t1_label,
       t2_study_id = coloc_combo_row$t2_study_id,
-      t2 = t2_label,
-      hit1 = cojo_snp1,
-      hit2 = cojo_snp2
+      t2          = t2_label,
+      hit1        = cojo_snp1,
+      hit2        = cojo_snp2
     )
   
   return(icoloc.res)
