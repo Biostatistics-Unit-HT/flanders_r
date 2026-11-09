@@ -42,10 +42,8 @@ fix_ad_var <- function(ad) {
     # Extract rowData and ensure it's a DataFrame
     var <- as.data.frame(rowData(ad))
     
-    # Create snp column from rownames if missing
-    if (!"snp" %in% colnames(var)) {
-      var$snp <- rownames(ad)
-    }
+    # Create snp column from rownames
+    var$snp <- rownames(ad)
     
     # Add chr and pos columns
     var <- var %>%
@@ -57,11 +55,9 @@ fix_ad_var <- function(ad) {
     # Write back into rowData
     rowData(ad) <- S4Vectors::DataFrame(var)
     
-  } else if (inherits(ad, "AnnData")) {
+  } else if (inherits(ad, "AnnDataR6")) {
     # Add snp column if missing
-    if (!"snp" %in% colnames(ad$var)) {
-      ad$var$snp <- rownames(ad$var)
-    }
+    ad$var$snp <- rownames(ad$var)
     
     ad$var <- ad$var %>%
       mutate(

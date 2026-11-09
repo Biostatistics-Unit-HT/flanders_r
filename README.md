@@ -17,7 +17,8 @@ When processing small to moderate datasets, you can run colocalization tests on 
    2. [Installation via Conda Environment](#installation-via-conda-environment)
 2. [Quick Start](#quick-start)  
    1. [Scenario 1: Starting with an existing AnnData](#scenario-1-starting-with-an-existing-anndata)  
-   2. [Scenario 2: Starting with nf-flanders Finemapping Output](#scenario-2-starting-with-nf-flanders-finemapping-output)   
+   2. [Scenario 2: Starting with nf-flanders Finemapping Output](#scenario-2-starting-with-nf-flanders-finemapping-output)
+   3. [Scenario 3: Meta-analysis across multiple populations](#scenario-3-meta-analysis-across-multiple-populations)  
 3. [Function Reference](#function-reference)
 4. [AnnData Column Specifications](#anndata-column-specifications)  
 5. [Additional Resources](#additional-resources)  
@@ -36,6 +37,10 @@ install.packages("data.table")
 install.packages("dplyr")
 install.packages("Matrix")
 install.packages("optparse")
+install.packages("R.utils")
+install.packages("stringi")
+install.packages("qgraph")
+install.packages("igraph")
 
 # You need these Bioconductor packages:
 if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -55,7 +60,7 @@ This guide installs all dependencies from CRAN and Bioconductor for a straightfo
 
 For a more reproducible environment or if you need to interface with Python’s AnnData via reticulate, you can set up a Conda environment as follows:
 ```bash
-mamba create -p <your_folder_with_conda_envs>/flanders_r \
+mamba create -p /ssu/bsssu/conda_envs_bsssu/flanders_r_2.2.0 \
   -c conda-forge -c bioconda -c R \
   r-base=4.4 \
   bioconductor-singlecellexperiment=1.28.0 \
@@ -67,11 +72,23 @@ mamba create -p <your_folder_with_conda_envs>/flanders_r \
   r-dplyr=1.1.4 \
   r-anndata=0.7.5.6 \
   r-matrix=1.7_3 \
-  r-optparse=1.7.5
+  r-optparse=1.7.5 \
+  r-roxygen2=7.3.2 \
+  r-igraph=2.0.3 \
+  r-qgraph=1.9.8 \
+  r-r.utils=2.13.0 \
+  r-stringi \
+  r-rmpfr \
+  r-remotes
 
 conda activate <your_folder_with_conda_envs>/flanders_r
-git clone git@github.com:Biostatistics-Unit-HT/flanders_r.git
-install.packages("flanders_r", repos = NULL, type = "source")
+Rscript -e "install.packages('https://cran.r-project.org/src/contrib/Archive/RcppEigen/RcppEigen_0.3.3.9.3.tar.gz', lib='<your_folder_with_conda_envs>/lib/R/library/', upgrade = 'never')"
+
+
+Rscript -e "remotes::install_github('jrs95/hyprcoloc', build_vignettes = FALSE,lib='<your_folder_with_conda_envs>/lib/R/library/', upgrade = 'never')"
+
+git clone git@gitlab.fht.org:biostatistics-unit/flanders_r.git
+install.packages("flanders_r", repos = NULL, type = "source",lib='<your_folder_with_conda_envs>/lib/R/library/')
 
 ```
 
@@ -163,10 +180,87 @@ If you do not have an AnnData object yet:
 ```
 
 4. **Perform Colocalization Analysis**
-   ```r
-    coloc_results <- anndata2coloc(sce, coloc_input)
-    print(coloc_results)
-   ```
+```r
+   coloc_results <- anndata2coloc(sce, coloc_input)
+   print(coloc_results)
+```
+
+5. **Identify simple modules/group of co-regulated signals and create credible sets-wise master table**
+```r
+   library(igraph)
+
+   modules <- identify_simple_modules(coloc_results, pp.H4.threshold=0.75, check_connectivity=FALSE)
+   master_table <- create_master_table(ad, simple_modules=modules)
+   print(master_table)
+   ```  
+
+6. **Identify modules/group of co-regulated signals, use coloc percolation to dientagloe the most comple ones, create credible sets-wise master table and perform joint fine-mapping**
+```r
+   library(igraph)
+   library(qgraph)
+   library(stringi)
+
+   # Identify fully connected and partially connected modules
+   modules <- identify_simple_modules(coloc_results, pp.H4.threshold=0.75, check_connectivity=TRUE)
+   
+   # Run partially connected module through coloc percolation to refine them
+   groups <- run_coloc_percolation(
+     modules$partly_connected_modules,
+     ad,
+     pp.H4.threshold=0.75,
+     icoloc.reg=TRUE)
+
+   # Create master table
+   master_table <- create_master_table(
+     ad,
+     post_cp_list = groups,
+     fully_connected_modules = modules$fully_connected_modules
+  )
+
+   # Perform joint fine-mapping
+   joint_finemapping_obj <- run_joint_finemapping(ad, master_table)
+
+   joint_finemapping_obj$master_table # Access master table with modules, most likely SNP from joint fine-mapping
+   joint_finemapping_obj$joint.lABF.matrix # Access sparse matrix collecting joint fine-mapping lABFs (per credible set and SNP)
+
+   ``` 
+   
+       
+
+### Scenario 3: Meta-analysis across multiple populations
+
+Once you have an AnnData object with fine-mapping results for several cohorts, you can run a cross-population meta-analysis of credible sets using `meta_analysis_per_trait()`:
+
+```r
+library(SingleCellExperiment)
+library(zellkonverter)
+library(data.table)      # for fread()
+library(flanders)
+
+# 1. Load your merged AnnData object
+ann.data <- readH5AD(
+  file   = "/ssu/bsssu/anndata_finemapping_repository/cardinal_UKBB_europeans_ELGH_pakistani_cis_finemapping_full_FLIP_FIXED_20250611.h5ad",
+  verbose = TRUE,
+  reader  = "R"
+)
+
+# 2. Read your colocalization results table
+coloc_res <- fread(
+  "/ssu/bsssu/cardinal_finemap_coloc/anndata/anndata_020525_coloc/results/cardinal_UKBB_europeans_ELGH_pakistani_colocalization_table_all_merged.txt"
+)
+
+# 3. Run meta‐analysis per trait across populations
+full_meta_res <- meta_analysis_per_trait(
+  ad_or_sce = ann.data,
+  coloc_res = coloc_res
+)
+
+# Inspect the output
+print(full_meta_res)
+```
+
+This will return a data.frame of meta-analysed credible‐set results (one row per trait), combining evidence across your cohorts. You can then use these summaries for downstream interpretation or visualization.
+
 ---
 
 ## Function Reference
@@ -179,6 +273,18 @@ If you do not have an AnnData object yet:
 
 - **anndata2coloc**  
   Performs colocalization tests using the provided AnnData object and trait-pair table.
+
+- **identify_simple_modules**
+  Defines modules (communities) of colocalizing signals using a graph-based approach. Optionally, checks whether each module is fully connected.
+
+- **create_master_table**
+  Constructs a master table where each credible set has been assigned to a module. It can be run directly on simple module or modules which have been further refined by coloc percolation.
+
+- **run_coloc_percolation**
+  Runs colocalization-guided percolation analysis to refine modules having credible sets which did not all colocalise among themselves in pair-wise tests.
+
+- **run_joint_finemapping**
+  Once modules have been defined, runs a joint fine-mapping to identify a single credible set for each module.
 
 ---
 

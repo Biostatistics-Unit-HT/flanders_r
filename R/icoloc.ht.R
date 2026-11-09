@@ -28,8 +28,8 @@ icoloc.ht <- function(
     p12 = 1e-5
 ){
 
-  df1 <- df1 %>% rename("lABF.df1" = "lABF")
-  df2 <- df2 %>% rename("lABF.df2" = "lABF")
+  df1 <- df1 %>% dplyr::rename("lABF.df1" = "lABF")
+  df2 <- df2 %>% dplyr::rename("lABF.df2" = "lABF")
 
   p1 <- coloc:::adjust_prior(p1, nrow(df1), "1")
   p2 <- coloc:::adjust_prior(p2, nrow(df2), "2")

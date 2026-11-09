@@ -1,2 +1,9 @@
-^.*\.Rproj$
-^\.Rproj\.user$
+^\.git$
+^\.gitignore$
+^\.gitlab-ci\.yml$
+^\.\.Rcheck$
+^dockerfile$
+^build_and_push_docker_2_gitlabfht$
+^docker_flanders_cicd$
+^\.github$
+^\.devcontainer$

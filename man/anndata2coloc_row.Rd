@@ -8,14 +8,34 @@ anndata2coloc_row(coloc_combo_row, ad_by_chr)
 }
 \arguments{
 \item{coloc_combo_row}{A row from the colocalization guide table containing
-information on trait pairs to be tested.}
+information on trait pairs to be tested. Expected columns: \code{t1},
+\code{t2} (credible-set names that must be present in the AnnData /
+SingleCellExperiment), \code{t1_study_id}, \code{t2_study_id},
+\code{t1_phenotype_id}, \code{t2_phenotype_id} and \code{chr}.}
 
 \item{ad_by_chr}{A list of AnnData object, split by chromosome. Each element
 of the list should have name like chr1, chr 21 and so on}
 }
 \value{
-A list with colocalization results, including a summary with the top
-SNPs and trait information.
+A list with colocalization results. The \code{$summary} data frame
+contains the standard coloc posteriors (\code{nsnps},
+\code{PP.H0.abf}-\code{PP.H4.abf}) plus the following identification
+columns:
+\describe{
+  \item{\code{t1_study_id}, \code{t2_study_id}}{Study IDs as provided in
+  the input row.}
+  \item{\code{t1}, \code{t2}}{Trait \emph{labels}: the
+  \code{phenotype_id} when available, otherwise the \code{study_id}.
+  Note that these do NOT carry the credible-set names from the input -
+  see \code{t1_cs_name} / \code{t2_cs_name} for those.}
+  \item{\code{t1_cs_name}, \code{t2_cs_name}}{The original
+  credible-set names from \code{coloc_combo_row$t1} and
+  \code{coloc_combo_row$t2}.}
+  \item{\code{hit1}, \code{hit2}}{Top SNP for each trait, extracted
+  from the credible-set name when it follows the
+  \code{{label}_{snp}_locus_*_finemap.rds} convention; otherwise the
+  credible-set name itself.}
+}
 }
 \description{
 This function performs colocalization analysis for a specific pair of traits

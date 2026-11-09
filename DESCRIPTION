@@ -1,12 +1,13 @@
 Package: flanders
 Type: Package
 Title: Finemapping coLocalization AND plEiotRopy Solver
-Version: 1.0.1
-Author: Sodbo Sharapov, Arianna Landini, Edoardo Giacopuzzi, Nicola Pirastu
-Maintainer: Sodbo Sharapov <sodbo.sharapov@fht.org>
+Version: 2.3.11
+Author: Sodbo Sharapov, Arianna Landini, Nicola Pirastu
+Maintainer: Sodbo Sharapov <sodbo.sharapov@fht.org>, Arianna Landini <arianna.landini@fht.org>, Bruno Ariano <bruno.ariano@fht.org>
 Description: A tool for fine-mapping, colocalization, and pleiotropy analysis
   in genetic studies. It integrates multiple datasets to identify shared
   genetic signals and provides statistical insights.
+Depends: R (>= 4.1.0)
 Imports: 
   Matrix,
   SingleCellExperiment,
@@ -15,10 +16,17 @@ Imports:
   data.table,
   dplyr,
   scRNAseq,
-  zellkonverter
+  zellkonverter,
+  igraph,
+  qgraph,
+  stringi,
+  R.utils,
+  S4Vectors,
+  Rcpp
+LinkingTo: Rcpp
 ImportFrom: 
   stats, setNames
 License: GPL-3
 Encoding: UTF-8
-LazyData: true
-RoxygenNote: 7.3.2
+LazyData: false
+RoxygenNote: 7.3.3
