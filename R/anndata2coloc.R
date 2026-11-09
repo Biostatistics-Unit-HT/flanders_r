@@ -31,7 +31,16 @@
 #'
 anndata2coloc <- function(ad_or_sce, coloc_input) {
   is_sce <- inherits(ad_or_sce, "SingleCellExperiment")
-  
+
+  # Ensure chromosome columns are character
+  if (is_sce) {
+    rowData(ad_or_sce)$chr <- as.character(rowData(ad_or_sce)$chr)
+    colData(ad_or_sce)$chr <- as.character(colData(ad_or_sce)$chr)
+  } else {
+    ad_or_sce$obs$chr <- as.character(ad_or_sce$obs$chr)
+    ad_or_sce$var$chr <- as.character(ad_or_sce$var$chr)
+  }
+    
   # Extract chromosome information:
   # For SCE: credible set info is in colData,
   # and the credible set names are in the rownames of colData (which should equal colnames(ad_or_sce)).
