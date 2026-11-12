@@ -25,16 +25,9 @@ columns:
   \item{\code{t1_study_id}, \code{t2_study_id}}{Study IDs as provided in
   the input row.}
   \item{\code{t1}, \code{t2}}{Trait \emph{labels}: the
-  \code{phenotype_id} when available, otherwise the \code{study_id}.
-  Note that these do NOT carry the credible-set names from the input -
-  see \code{t1_cs_name} / \code{t2_cs_name} for those.}
-  \item{\code{t1_cs_name}, \code{t2_cs_name}}{The original
-  credible-set names from \code{coloc_combo_row$t1} and
-  \code{coloc_combo_row$t2}.}
-  \item{\code{hit1}, \code{hit2}}{Top SNP for each trait, extracted
-  from the credible-set name when it follows the
-  \code{{label}_{snp}_locus_*_finemap.rds} convention; otherwise the
-  credible-set name itself.}
+  \code{phenotype_id} when available, otherwise the \code{study_id}.}
+  \item{\code{hit1}, \code{hit2}}{Credible-set names from
+  \code{coloc_combo_row$t1} and \code{coloc_combo_row$t2}, respectively.}
 }
 }
 \description{

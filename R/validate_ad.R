@@ -74,7 +74,7 @@ validate_anndata <- function(ad) {
   required_var <- c("snp", "chr", "pos")
   missing_var <- setdiff(required_var, colnames(var))
   if (length(missing_var) > 0) {
-    cat("❌ Missing columns in var:", paste(missing_var, collapse=", "), "\n")
+    cat("ERROR: Missing columns in var:", paste(missing_var, collapse=", "), "\n")
     cat("Available columns:\n")
     print(colnames(var))
     cat("\nHead of var:\n")
@@ -84,10 +84,10 @@ validate_anndata <- function(ad) {
   
   # rownames vs snp (warn only)
   if (!all(var_rownames == var$snp)) {
-    cat("⚠️  Warning: rownames(var) do not match var$snp\n")
+    cat("WARNING: rownames(var) do not match var$snp\n")
     print(head(data.frame(rownames = var_rownames, snp = var$snp), 5))
   } else {
-    cat("var rownames match var$snp ✅\n")
+    cat("OK: var rownames match var$snp\n")
   }
   
   # ---- check required obs ----
@@ -96,7 +96,7 @@ validate_anndata <- function(ad) {
                     "coverage", "logsum.logABF")
   missing_obs <- setdiff(required_obs, colnames(obs))
   if (length(missing_obs) > 0) {
-    cat("❌ Missing columns in obs:", paste(missing_obs, collapse=", "), "\n")
+    cat("ERROR: Missing columns in obs:", paste(missing_obs, collapse=", "), "\n")
     cat("Available columns:\n")
     print(colnames(obs))
     cat("\nHead of obs:\n")
@@ -106,10 +106,10 @@ validate_anndata <- function(ad) {
   
   # colnames vs cs_name (warn only)
   if (!all(obs_rownames == obs$cs_name)) {
-    cat("⚠️  Warning: obs names do not match obs$cs_name\n")
+    cat("WARNING: obs names do not match obs$cs_name\n")
     print(head(data.frame(obs_names = obs_rownames, cs_name = obs$cs_name), 5))
   } else {
-    cat("obs names match obs$cs_name ✅\n")
+    cat("OK: obs names match obs$cs_name\n")
   }
   
   # ---- summary ----
@@ -145,7 +145,7 @@ validate_anndata <- function(ad) {
     cat("anndata2coloc: OK (", nrow(coloc_res), "rows)\n")
   }
   
-  cat("\nValidation completed ✅\n")
+  cat("\nDONE: Validation completed\n")
   
   invisible(list(
     n_cs = n_cs,

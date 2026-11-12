@@ -22,9 +22,9 @@
 #'   \item{\code{t1_study_id}, \code{t2_study_id}}{Study IDs as provided in
 #'   the input row.}
 #'   \item{\code{t1}, \code{t2}}{Trait \emph{labels}: the
-#'   \code{phenotype_id} when available, otherwise the \code{study_id}.
-#'   \item{\code{hit1}, \code{hit2}} the
-#'   credible-set name from coloc_combo_row$t1 and coloc_combo_row$t2.}
+#'   \code{phenotype_id} when available, otherwise the \code{study_id}.}
+#'   \item{\code{hit1}, \code{hit2}}{Credible-set names from
+#'   \code{coloc_combo_row$t1} and \code{coloc_combo_row$t2}, respectively.}
 #' }
 #' @export
 #' @import dplyr

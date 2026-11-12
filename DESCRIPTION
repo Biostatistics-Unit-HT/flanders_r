@@ -22,7 +22,9 @@ Imports:
   stringi,
   R.utils,
   S4Vectors,
-  Rcpp
+  Rcpp,
+  hyprcoloc,
+  susieR
 LinkingTo: Rcpp
 ImportFrom: 
   stats, setNames
