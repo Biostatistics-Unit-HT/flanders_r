@@ -106,8 +106,15 @@ anndata2coloc_input <- function(ad_or_sce) {
     if (length(snp_idx) < 2 || length(cs_idx) < 2) next
 
     X_chr <- X_all[cs_idx, snp_idx, drop = FALSE]
+    
+    # Convert SNP presence to a numeric sparse matrix.
+    X_present <- as(
+      as(as(X_chr != 0, "dMatrix"), "generalMatrix"),
+      "CsparseMatrix"
+    )
 
-    matrix_product <- X_chr %*% Matrix::t(X_chr)
+    # Count shared SNPs between CS/modules.
+    matrix_product <- X_present %*% Matrix::t(X_present)
     diag(matrix_product) <- 0
 
     # set row/col names to CS names
@@ -117,7 +124,7 @@ anndata2coloc_input <- function(ad_or_sce) {
     out_list[[chr_val]] <- matrix_product
   }
 
-    # Collect coloc tables per chromosome
+  # Collect coloc tables per chromosome
   coloc_all <- list()
 
   for (chr_val in names(out_list)) {
