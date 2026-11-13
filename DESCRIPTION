@@ -1,7 +1,7 @@
 Package: flanders
 Type: Package
 Title: Finemapping coLocalization AND plEiotRopy Solver
-Version: 2.3.11
+Version: 2.3.12
 Author: Sodbo Sharapov, Arianna Landini, Nicola Pirastu
 Maintainer: Sodbo Sharapov <sodbo.sharapov@fht.org>, Arianna Landini <arianna.landini@fht.org>, Bruno Ariano <bruno.ariano@fht.org>
 Description: A tool for fine-mapping, colocalization, and pleiotropy analysis
