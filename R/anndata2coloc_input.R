@@ -94,57 +94,64 @@ anndata2coloc_input <- function(ad_or_sce) {
     stop("Both SNP-level and CS-level metadata must contain a 'chr' column.")
   }
 
-  out_list <- list()
+  # Collect output tables, rather than chromosome overlap matrices.
+  coloc_all <- list()
 
   for (chr_val in intersect(unique(snp_chr), unique(cs_chr))) {
     message("Processing chromosome: ", chr_val)
 
-    # subset SNPs and CS for this chromosome
     snp_idx <- which(snp_chr == chr_val)
     cs_idx  <- which(cs_chr == chr_val)
 
-    if (length(snp_idx) < 2 || length(cs_idx) < 2) next
+    if (length(snp_idx) < 2L || length(cs_idx) < 2L) next
 
+    # Extract this chromosome and convert nonzero values to SNP presence.
     X_chr <- X_all[cs_idx, snp_idx, drop = FALSE]
 
-    matrix_product <- X_chr %*% Matrix::t(X_chr)
+    X_present <- as(
+      as(as(X_chr != 0, "dMatrix"), "generalMatrix"),
+      "CsparseMatrix"
+    )
+    rm(X_chr)
+
+    # Count shared SNPs between credible sets/modules.
+    matrix_product <- X_present %*% Matrix::t(X_present)
+    rm(X_present)
+
     diag(matrix_product) <- 0
 
-    # set row/col names to CS names
-    rownames(matrix_product) <- cs_names[cs_idx]
-    colnames(matrix_product) <- cs_names[cs_idx]
-
-    out_list[[chr_val]] <- matrix_product
-  }
-
-    # Collect coloc tables per chromosome
-  coloc_all <- list()
-
-  for (chr_val in names(out_list)) {
-    message("Processing chromosome: ", chr_val)
-    matrix_product <- out_list[[chr_val]]
-
-    # Skip empty matrices
-    if (all(matrix_product == 0)) next
-
-    # Find non-zero overlaps (shared SNPs)
+    # Extract pair indices, then release the overlap matrix.
     shared_elements <- which(matrix_product > 0, arr.ind = TRUE)
-    shared_elements_df <- as.data.frame(shared_elements)
-    shared_elements_df$row <- rownames(matrix_product)[shared_elements_df$row]
-    shared_elements_df$col <- colnames(matrix_product)[shared_elements_df$col]
+    rm(matrix_product)
 
-    # Get unique and sorted credible set pairs
-    shared_elements_unique <- unique(t(apply(shared_elements_df[, c("row", "col")], 1, sort)))
+    if (nrow(shared_elements) == 0L) next
+
+    # Map chromosome-local indices back to credible set identifiers.
+    chromosome_cs_names <- cs_names[cs_idx]
+
+    shared_elements_df <- data.frame(
+      row = chromosome_cs_names[shared_elements[, 1L]],
+      col = chromosome_cs_names[shared_elements[, 2L]],
+      stringsAsFactors = FALSE
+    )
+    rm(shared_elements, chromosome_cs_names)
+
+    # Keep one copy of each pair, with identifiers sorted alphabetically.
+    shared_elements_unique <- unique(
+      t(apply(shared_elements_df[, c("row", "col")], 1, sort))
+    )
     colnames(shared_elements_unique) <- c("t1", "t2")
     rownames(shared_elements_unique) <- NULL
+    rm(shared_elements_df)
 
-    # Merge trait info
+    # Attach metadata for each member of the pair.
     coloc_combo <- merge(
       shared_elements_unique,
       obs_df %>% dplyr::select(-any_of("panel")),
       by.x = "t1",
       by.y = "cs_name"
     )
+    rm(shared_elements_unique)
 
     coloc_combo <- merge(
       coloc_combo,
@@ -154,32 +161,34 @@ anndata2coloc_input <- function(ad_or_sce) {
       suffixes = c("_t1", "_t2")
     )
 
-    # Remove same study_id and phenotype_id duplicates
+    # Exclude pairs representing the same study–phenotype combination.
     coloc_combo <- coloc_combo %>%
       dplyr::filter(
         study_id_t1 != study_id_t2 |
-          (study_id_t1 == study_id_t2 & phenotype_id_t1 != phenotype_id_t2)
+          (
+            study_id_t1 == study_id_t2 &
+              phenotype_id_t1 != phenotype_id_t2
+          )
       ) %>%
       dplyr::select(-chr_t2, -contains("start"), -contains("end"))
 
     coloc_combo <- coloc_combo %>%
-      mutate(chr = chr_t1) %>%
-      select(
+      dplyr::mutate(chr = chr_t1) %>%
+      dplyr::select(
         t2, t1,
         study_id_t1, phenotype_id_t1, any_of("top_pvalue_t1"),
         study_id_t2, phenotype_id_t2, any_of("top_pvalue_t2"),
         chr
       )
 
-    # Rename columns consistently
-    if (ncol(coloc_combo) == 9) {
+    if (ncol(coloc_combo) == 9L) {
       colnames(coloc_combo) <- c(
         "t2", "t1",
         "t1_study_id", "t1_phenotype_id", "t1_top_pvalue",
         "t2_study_id", "t2_phenotype_id", "t2_top_pvalue",
         "chr"
       )
-    } else if (ncol(coloc_combo) == 7) {
+    } else if (ncol(coloc_combo) == 7L) {
       colnames(coloc_combo) <- c(
         "t2", "t1",
         "t1_study_id", "t1_phenotype_id",
@@ -190,7 +199,9 @@ anndata2coloc_input <- function(ad_or_sce) {
       stop("Unexpected number of columns in coloc_combo")
     }
 
+    # Retain only the output table for this chromosome.
     coloc_all[[chr_val]] <- coloc_combo
+    rm(coloc_combo)
   }
 
   # Combine across chromosomes
